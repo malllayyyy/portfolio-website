@@ -337,8 +337,7 @@ body.modal-open > #aurora-bg {
 /* Typography Helpers */
 .pixel-title {
   font-family: var(--font-display);
-  font-weight: 900;
-  font-size: clamp(4.5rem, 13vw, 10rem);
+  font-size: clamp(3.5rem, 8vw, 8rem);
   line-height: 0.88;
   letter-spacing: -0.03em;
   text-transform: uppercase;

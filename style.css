@@ -582,11 +582,11 @@ body.modal-open > #aurora-bg {
   position: relative;
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  padding: 80px 1.5rem 2rem 1.5rem;
-  text-align: center;
+  justify-content: flex-end;
+  padding: 80px 8% 2rem 5%;
+  text-align: left;
   max-width: none;
   margin: 0;
   width: 100%;
@@ -602,7 +602,8 @@ body.modal-open > #aurora-bg {
 .hero-content {
   position: relative;
   z-index: 2;
-  max-width: 800px;
+  width: 50%;
+  max-width: 650px;
 }
 
 .hero-eyebrow {
@@ -635,7 +636,7 @@ body.modal-open > #aurora-bg {
 .hero-cta {
   display: flex;
   gap: 1rem;
-  justify-content: center;
+  justify-content: flex-start;
   margin-bottom: 3rem;
 }
 
@@ -1892,5 +1893,21 @@ footer a {
   .tech-badge {
     transform: none !important;
     opacity: 1 !important;
+  }
+}
+
+@media (max-width: 900px) {
+  #home {
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-bottom: 12vh;
+    text-align: center;
+  }
+  .hero-content {
+    width: 100%;
+    margin-top: 35vh; /* leave space for the 3D face */
+  }
+  .hero-cta {
+    justify-content: center;
   }
 }

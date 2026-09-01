@@ -59,9 +59,20 @@ export function initHero(canvas) {
   // MASCOT CONSTRUCTION
   // -------------------------------------------------------------
   const mascot = new THREE.Group();
-  mascot.position.set(1.9, -0.6, 0);
-  mascot.scale.setScalar(0.7);
   scene.add(mascot);
+
+  function updateMascotLayout() {
+    if (window.innerWidth > 900) {
+      mascot.position.set(-2.0, -0.2, 0);
+      mascot.scale.setScalar(0.9);
+    } else {
+      mascot.position.set(0, 1.5, 0);
+      mascot.scale.setScalar(0.7);
+    }
+  }
+  updateMascotLayout();
+
+
 
   const disposables = [];
 
@@ -252,6 +263,7 @@ export function initHero(canvas) {
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    updateMascotLayout();
   };
   window.addEventListener('resize', handleResize);
 
@@ -320,7 +332,7 @@ export function initHero(canvas) {
 
     // Scroll dolly
     camera.position.z = 6.5 + scrollProgress * 1.2;
-    camera.lookAt(mascot.position);
+    camera.lookAt(0, 0, 0);
 
     renderer.render(scene, camera);
 

@@ -41,18 +41,21 @@ const FRAGMENT_SHADER = /* glsl */ `
 
   float map(vec3 p) {
     float t = u_time * 0.35 * u_motion;
-    p.y -= 0.55; // lift the cluster up behind the title, clear of the CTA buttons
+    // Shift metaball cluster toward lower-right corner, clear of hero typography
+    p.x -= 1.15;
+    p.y += 0.85;
 
-    vec3 p1 = p + vec3(sin(t * 0.7) * 0.68, cos(t * 0.5) * 0.48, sin(t * 0.9) * 0.4);
-    vec3 p2 = p + vec3(cos(t * 0.6) * 0.58, sin(t * 0.8) * 0.52, cos(t * 0.4) * 0.44);
-    vec3 p3 = p + vec3(sin(t * 0.4 + 2.0) * 0.52, cos(t * 0.3 + 1.0) * 0.4, sin(t * 0.6 + 3.0) * 0.48);
+    vec3 p1 = p + vec3(sin(t * 0.7) * 0.40, cos(t * 0.5) * 0.30, sin(t * 0.9) * 0.25);
+    vec3 p2 = p + vec3(cos(t * 0.6) * 0.35, sin(t * 0.8) * 0.30, cos(t * 0.4) * 0.25);
+    vec3 p3 = p + vec3(sin(t * 0.4 + 2.0) * 0.30, cos(t * 0.3 + 1.0) * 0.25, sin(t * 0.6 + 3.0) * 0.30);
 
-    float d1 = sdSphere(p1, 0.58);
-    float d2 = sdSphere(p2, 0.44);
-    float d3 = sdSphere(p3, 0.36);
+    // Reduced radii (roughly 60% of original size)
+    float d1 = sdSphere(p1, 0.35);
+    float d2 = sdSphere(p2, 0.26);
+    float d3 = sdSphere(p3, 0.22);
 
-    float d = smin(d1, d2, 0.5);
-    d = smin(d, d3, 0.5);
+    float d = smin(d1, d2, 0.35);
+    d = smin(d, d3, 0.35);
     return d;
   }
 
@@ -65,16 +68,12 @@ const FRAGMENT_SHADER = /* glsl */ `
     ));
   }
 
-  // Tight cyan -> violet -> magenta gradient — matches the site's accent
-  // palette exactly instead of a full-spectrum rainbow cycle.
+  // Mint palette matching --accent-prime (#00f5a0)
   vec3 palette(float t) {
-    vec3 cCyan = vec3(0.369, 0.961, 1.0);
-    vec3 cViolet = vec3(0.706, 0.42, 1.0);
-    vec3 cMagenta = vec3(1.0, 0.38, 0.78);
+    vec3 cMint = vec3(0.0, 0.961, 0.628);
+    vec3 cMintSoft = vec3(0.0, 0.70, 0.48);
     float tt = fract(t * 0.5 + 0.5);
-    return tt < 0.5
-      ? mix(cCyan, cViolet, tt * 2.0)
-      : mix(cViolet, cMagenta, (tt - 0.5) * 2.0);
+    return mix(cMintSoft, cMint, tt);
   }
 
   void main() {
@@ -111,13 +110,13 @@ const FRAGMENT_SHADER = /* glsl */ `
 
       vec3 base = palette(n.x * 0.5 + n.y * 0.35 + u_time * 0.04 * u_motion);
       color = base * (0.28 + diff * 0.5) + fresnel * base * 0.95 + vec3(1.0) * spec * 0.65;
-      alpha = 0.9;
+      alpha = 0.45;
     } else {
       // Soft glow halo around the surface instead of a hard silhouette edge
       float glow = exp(-minDist * 2.6);
       vec3 glowColor = palette(u_time * 0.03 * u_motion + 0.15);
       color = glowColor * glow * 0.6;
-      alpha = glow * 0.35;
+      alpha = glow * 0.18;
     }
 
     gl_FragColor = vec4(color, alpha);

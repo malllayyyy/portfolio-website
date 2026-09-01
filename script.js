@@ -70,6 +70,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const levelBadge = document.getElementById('hud-level');
   const navLinks = document.querySelectorAll('#hud-nav a, .mobile-menu-overlay a');
 
+  // Corner HUD Frame DOM references
+  const cornerScroll = document.getElementById('hud-corner-scroll');
+  const cornerSection = document.getElementById('hud-corner-section');
+  const brackets = document.querySelectorAll('.hud-bracket');
+
   let isTickingScroll = false;
 
   // Quest Map DOM references
@@ -102,6 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (xpBar) xpBar.style.width = `${scrollPercent}%`;
     if (xpText) xpText.textContent = `${scrollPercent}% XP`;
+    if (cornerScroll) cornerScroll.textContent = `${scrollPercent}%`;
 
     // 2. Quest Map Progress & Node Lighting
     if (questTrack) {
@@ -194,6 +200,17 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         });
 
+        // Update Corner HUD active section & trigger brief bracket flash
+        if (cornerSection) {
+          cornerSection.textContent = id.toUpperCase();
+        }
+        if (!prefersReducedMotion && brackets.length > 0) {
+          brackets.forEach((b) => {
+            b.classList.remove('flash');
+            void b.offsetWidth;
+            b.classList.add('flash');
+          });
+        }
         // Level update & Achievement trigger
         if (!visitedSections.has(id)) {
           visitedSections.add(id);
@@ -245,27 +262,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // ------------------------------------------------------------------------
-  // 4. REVEAL-ON-SCROLL & SKILL BAR ANIMATION
+  // 4. REVEAL-ON-SCROLL
   // ------------------------------------------------------------------------
   const revealElements = document.querySelectorAll('.reveal');
   const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         entry.target.classList.add('is-visible');
-
-        // Animate skill bars inside section if present
-        const skillFills = entry.target.querySelectorAll('.skill-bar-fill');
-        skillFills.forEach((fill) => {
-          const targetWidth = fill.getAttribute('data-fill');
-          if (targetWidth) fill.style.width = targetWidth;
-        });
       }
     });
   }, { threshold: 0.15 });
   revealElements.forEach((el) => revealObserver.observe(el));
 
   // Staggered grid entrance index delays
-  const gridContainers = document.querySelectorAll('.skills-list, .projects-grid, .arcade-grid');
+  const gridContainers = document.querySelectorAll('.loadout-grid, .projects-grid, .arcade-grid');
   gridContainers.forEach((container) => {
     Array.from(container.children).forEach((child, index) => {
       const delay = Math.min(index * 70, 400);
@@ -283,7 +293,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       cursor.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) translate(-50%, -50%)`;
     }, { passive: true });
 
-    const hoverables = document.querySelectorAll('a, button, input, textarea, .project-card, .arcade-cabinet, .save-card, .quest-node');
+    const hoverables = document.querySelectorAll('a, button, input, textarea, .project-card, .arcade-cabinet, .save-card, .quest-node, .loadout-card');
     hoverables.forEach((el) => {
       el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
       el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
@@ -292,7 +302,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Cursor-Reactive Spotlight & Magnetic Hover (desktop / non-touch)
   if (!isTouchDevice) {
-    const spotlightCards = document.querySelectorAll('.project-card, .arcade-cabinet, .save-card');
+    const spotlightCards = document.querySelectorAll('.project-card, .arcade-cabinet, .save-card, .loadout-card');
     spotlightCards.forEach((card) => {
       card.addEventListener('mousemove', (e) => {
         const rect = card.getBoundingClientRect();
@@ -327,7 +337,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Click Spark Burst on Interactive Primary Elements
   const sparkTargets = document.querySelectorAll('.btn-primary, .btn-secondary, .quest-node');
-  const sparkColors = ['#5ef5ff', '#b46bff', '#ffb454', '#4ee6a4'];
+  const sparkColors = ['#00f5a0', '#ff9e00'];
   sparkTargets.forEach((el) => {
     el.addEventListener('click', (e) => {
       if (prefersReducedMotion) return;
@@ -387,7 +397,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     showToast('SECRET UNLOCKED', 'Konami Cheat Code Activated!');
 
     // Spawn 30 confetti pieces
-    const colors = ['#5ef5ff', '#b46bff', '#4ee6a4', '#ffb454'];
+    const colors = ['#00f5a0', '#ff9e00'];
     for (let i = 0; i < 30; i++) {
       const confetti = document.createElement('div');
       confetti.className = 'confetti-piece';

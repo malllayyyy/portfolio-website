@@ -12,7 +12,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&family=Unbounded:wght@400;800;900&display=swap" rel="stylesheet">
 
   <!-- Three.js CDN Importmap -->
   <script type="importmap">
@@ -60,6 +60,17 @@
 
   <!-- Custom Cursor Reticle -->
   <div id="custom-cursor" aria-hidden="true"></div>
+  <!-- CORNER HUD VIEWFINDER BRACKETS -->
+  <div id="hud-frame" aria-hidden="true">
+    <div class="hud-bracket hud-bracket-tl"></div>
+    <div class="hud-bracket hud-bracket-tr"></div>
+    <div class="hud-bracket hud-bracket-bl">
+      <span id="hud-corner-section" class="hud-corner-label">HOME</span>
+    </div>
+    <div class="hud-bracket hud-bracket-br">
+      <span id="hud-corner-scroll" class="hud-corner-label">0%</span>
+    </div>
+  </div>
   <!-- FIXED GAME HUD BAR -->
   <header id="hud" role="banner">
     <div class="hud-left">
@@ -137,72 +148,88 @@
           </p>
         </div>
 
-        <!-- 6 Skill Bars -->
-        <div class="skills-list">
-          <div class="skill-item">
-            <div class="skill-header">
-              <span>Backend / APIs</span>
-              <span>90%</span>
-            </div>
-            <div class="skill-bar-track">
-              <div class="skill-bar-fill" data-fill="90%"></div>
-            </div>
-            <div class="skill-chips">Node.js, Express, layered architecture</div>
-          </div>
+        <!-- Equipped Loadout Grid -->
+        <div class="loadout-container">
+          <h3 class="loadout-title">// EQUIPPED LOADOUT</h3>
+          <div class="loadout-grid">
+            <article class="loadout-card rarity-legendary">
+              <div class="card-header">
+                <span class="item-name">Docker Sandbox Engine</span>
+                <span class="rarity-badge">LEGENDARY</span>
+              </div>
+              <div class="slot-tag">[SLOT: DEPLOYMENT PLATFORM]</div>
+              <ul class="loadout-stats">
+                <li>• Isolated build containers</li>
+                <li>• Lockfile-hashed cache</li>
+                <li>• 6/6 phases shipped</li>
+              </ul>
+              <p class="loadout-flavor">Containerized execution environment with zero host pollution.</p>
+            </article>
 
-          <div class="skill-item">
-            <div class="skill-header">
-              <span>Frontend / UI</span>
-              <span>85%</span>
-            </div>
-            <div class="skill-bar-track">
-              <div class="skill-bar-fill" data-fill="85%"></div>
-            </div>
-            <div class="skill-chips">React, Vite, Tailwind, vanilla JS, GSAP</div>
-          </div>
+            <article class="loadout-card rarity-epic">
+              <div class="card-header">
+                <span class="item-name">BullMQ Job Queue</span>
+                <span class="rarity-badge">EPIC</span>
+              </div>
+              <div class="slot-tag">[SLOT: DEPLOYMENT PLATFORM]</div>
+              <ul class="loadout-stats">
+                <li>• Async build pipeline</li>
+                <li>• Live log streaming via Socket.IO</li>
+              </ul>
+              <p class="loadout-flavor">Handles concurrent build queues without blocking main thread.</p>
+            </article>
 
-          <div class="skill-item">
-            <div class="skill-header">
-              <span>Databases</span>
-              <span>80%</span>
-            </div>
-            <div class="skill-bar-track">
-              <div class="skill-bar-fill" data-fill="80%"></div>
-            </div>
-            <div class="skill-chips">PostgreSQL, MongoDB, MySQL, Redis</div>
-          </div>
+            <article class="loadout-card rarity-legendary">
+              <div class="card-header">
+                <span class="item-name">MERN Migration Toolkit</span>
+                <span class="rarity-badge">LEGENDARY</span>
+              </div>
+              <div class="slot-tag">[SLOT: PROACADEMYS]</div>
+              <ul class="loadout-stats">
+                <li>• 37-table MySQL to MongoDB migration</li>
+                <li>• Zero downtime to legacy site</li>
+              </ul>
+              <p class="loadout-flavor">Custom ETL scripts preserving full data integrity.</p>
+            </article>
 
-          <div class="skill-item">
-            <div class="skill-header">
-              <span>DevOps / Infra</span>
-              <span>82%</span>
-            </div>
-            <div class="skill-bar-track">
-              <div class="skill-bar-fill" data-fill="82%"></div>
-            </div>
-            <div class="skill-chips">Docker, BullMQ, MinIO, CI-less auto-deploy</div>
-          </div>
+            <article class="loadout-card rarity-epic">
+              <div class="card-header">
+                <span class="item-name">Razorpay Payment Flow</span>
+                <span class="rarity-badge">EPIC</span>
+              </div>
+              <div class="slot-tag">[SLOT: PROACADEMYS]</div>
+              <ul class="loadout-stats">
+                <li>• Signature-verified orders</li>
+                <li>• Atomic enrollment on payment success</li>
+              </ul>
+              <p class="loadout-flavor">Hardened checkout pipeline preventing duplicate orders.</p>
+            </article>
 
-          <div class="skill-item">
-            <div class="skill-header">
-              <span>Auth & Payments</span>
-              <span>78%</span>
-            </div>
-            <div class="skill-bar-track">
-              <div class="skill-bar-fill" data-fill="78%"></div>
-            </div>
-            <div class="skill-chips">JWT, OAuth, Razorpay, sessions</div>
-          </div>
+            <article class="loadout-card rarity-rare">
+              <div class="card-header">
+                <span class="item-name">Session Pricing Engine</span>
+                <span class="rarity-badge">RARE</span>
+              </div>
+              <div class="slot-tag">[SLOT: GAMEZONE]</div>
+              <ul class="loadout-stats">
+                <li>• Duration-based billing</li>
+                <li>• Per-activity minimum charge</li>
+              </ul>
+              <p class="loadout-flavor">Dynamic rates calculated down to the second.</p>
+            </article>
 
-          <div class="skill-item">
-            <div class="skill-header">
-              <span>Game Dev (for fun)</span>
-              <span>65%</span>
-            </div>
-            <div class="skill-bar-track">
-              <div class="skill-bar-fill" data-fill="65%"></div>
-            </div>
-            <div class="skill-chips">Canvas 2D, Three.js, game loops</div>
+            <article class="loadout-card rarity-rare">
+              <div class="card-header">
+                <span class="item-name">Canvas Game Loop</span>
+                <span class="rarity-badge">RARE</span>
+              </div>
+              <div class="slot-tag">[SLOT: ARCADE]</div>
+              <ul class="loadout-stats">
+                <li>• Hand-built Pong AI</li>
+                <li>• 2D RPG collision system</li>
+              </ul>
+              <p class="loadout-flavor">Custom 60 FPS physics loops without framework overhead.</p>
+            </article>
           </div>
         </div>
       </div>
@@ -247,7 +274,7 @@
           <div>
             <div class="card-top">
               <div class="stars" aria-label="Difficulty 5 out of 5 stars">★★★★★</div>
-              <span class="status-badge complete">COMPLETE</span>
+              <span class="status-badge boss">BOSS LEVEL</span>
             </div>
             <h3 class="project-title">Deployment Platform</h3>
             <p class="project-tagline">

@@ -139,33 +139,31 @@ export function initHero(canvas) {
   const hairMat = new THREE.MeshStandardMaterial({ color: HAIR_COLOR, roughness: 0.8 });
   const hairSphereGeo = new THREE.SphereGeometry(0.45, 16, 16);
   const hairCapsuleGeo = new THREE.CapsuleGeometry(0.2, 0.5, 8, 16);
-
   // Top crown
   for(let i=0; i<4; i++) {
     const h = addMesh(hairSphereGeo, hairMat, headGroup);
-    h.scale.set(1.3, 0.8, 1.1);
-    h.position.set((Math.random()-0.5)*1.2, 0.8 + Math.random()*0.2, (Math.random()-0.5)*0.8);
+    h.scale.set(1.4, 0.9, 1.2);
+    h.position.set((Math.random()-0.5)*1.2, 1.05 + Math.random()*0.25, (Math.random()-0.5)*0.8 - 0.1);
     h.rotation.set(Math.random(), Math.random(), Math.random());
   }
   // Front Bangs
   for(let i=0; i<4; i++) {
     const h = addMesh(hairCapsuleGeo, hairMat, headGroup);
     const xOffset = -0.6 + (i * 0.4);
-    h.position.set(xOffset, 0.65, 0.8);
+    h.position.set(xOffset, 0.85, 0.85);
     h.rotation.set(0.4, 0, xOffset * 0.5 + 0.2);
   }
   // Side & Back locks
   for(let i=0; i<6; i++) {
     const h = addMesh(hairCapsuleGeo, hairMat, headGroup);
     const side = i % 2 === 0 ? 1 : -1;
-    h.position.set(side * 0.9, -0.1 + Math.random()*0.4, -0.3 + Math.random()*0.5);
+    h.position.set(side * 1.0, 0.1 + Math.random()*0.5, -0.3 + Math.random()*0.5);
     h.rotation.set(Math.random()*0.5, 0, side * 0.4);
   }
   // Back bulk
   const backHair = addMesh(hairSphereGeo, hairMat, headGroup);
-  backHair.scale.set(1.8, 1.2, 1.2);
-  backHair.position.set(0, 0.1, -0.6);
-
+  backHair.scale.set(2.2, 1.6, 1.6);
+  backHair.position.set(0, 0.3, -0.65);
   // 4. Translucent Sunglasses
   const frameGeo = new THREE.BoxGeometry(0.65, 0.45, 0.05);
   const frameMat = new THREE.MeshStandardMaterial({ color: 0x080808, roughness: 0.6 });
@@ -211,7 +209,7 @@ export function initHero(canvas) {
   headGroup.add(mouthGroup);
 
   const cavityGeo = new THREE.SphereGeometry(0.26, 16, 16);
-  const cavityMat = new THREE.MeshBasicMaterial({ color: 0x4a0e17 });
+  const cavityMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
   const cavity = addMesh(cavityGeo, cavityMat, mouthGroup);
   cavity.scale.set(1.4, 0.55, 0.15);
 
@@ -322,9 +320,9 @@ export function initHero(canvas) {
       headGroup.scale.set(1 - breathe * 0.5, 1 + breathe, 1 - breathe * 0.5);
       bodyGroup.scale.set(1 + breathe * 0.3, 1 - breathe * 0.3, 1 + breathe * 0.3);
 
-      // A very slow idle head sway, reacting to cursor tracking.
-      headGroup.rotation.y = Math.sin(t * 0.4) * 0.06 + mouseX * 0.15;
-      headGroup.rotation.x = mouseY * 0.1;
+      // Direct head tracking toward cursor
+      headGroup.rotation.y = mouseX * 0.6;
+      headGroup.rotation.x = -mouseY * 0.4;
       
       // Slight body twist
       bodyGroup.rotation.y = mouseX * 0.05;

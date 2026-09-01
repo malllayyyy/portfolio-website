@@ -1,142 +1,40 @@
 import * as THREE from 'three';
 
 /* ==========================================================================
-   HERO BACKGROUND — RAYMARCHED LIQUID METABALLS
+   HERO BACKGROUND — CARTOON MASCOT WITH CURSOR-TRACKING EYES
    ==========================================================================
-   Three iridescent SDF spheres drift and fuse into a single gloopy liquid
-   mass via a smooth-min raymarcher, entirely inside one fragment shader on
-   a fullscreen quad. No models, no lights, no extra dependencies — just
-   THREE.ShaderMaterial + THREE.PlaneGeometry(2, 2) rendered with an
-   orthographic-style passthrough vertex shader. The canvas stays alpha:true
-   so the site's CSS aurora background still shows through around the blobs.
-   Mouse position drives the light/reflection angle; scroll drives a slow
-   camera dolly, matching the interactivity of the previous particle hero.
+   A friendly procedural low-poly character (no external model/photo — pure
+   Three.js primitives) whose pupils slide toward the cursor "googly eye"
+   style: a flat dark pupil disc translated within its eye socket, clamped
+   to a max radius and eased toward the target each frame, not a full
+   eyeball rotation. Head follows "cute" proportions (eyes on/below the
+   centerline, big relative to the head, slight built-in inward focus) per
+   character-design research. Sits at the same de-emphasized corner
+   position/scale as the previous background element so the hero's bold
+   typography still carries the section — this is a charming detail, not
+   the focal point. Scroll drives a slow camera dolly, matching the
+   interactivity established elsewhere in the hero.
    ========================================================================== */
 
-const VERTEX_SHADER = /* glsl */ `
-  varying vec2 vUv;
-  void main() {
-    vUv = uv;
-    gl_Position = vec4(position.xy, 0.0, 1.0);
-  }
-`;
-
-const FRAGMENT_SHADER = /* glsl */ `
-  precision highp float;
-  varying vec2 vUv;
-
-  uniform vec2 u_resolution;
-  uniform float u_time;
-  uniform vec2 u_mouse;
-  uniform float u_scroll;
-  uniform float u_motion; // 1.0 = full animation, 0.0 = reduced-motion freeze
-  float sdSphere(vec3 p, float r) {
-    return length(p) - r;
-  }
-
-  float smin(float a, float b, float k) {
-    float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
-    return mix(b, a, h) - k * h * (1.0 - h);
-  }
-
-  float map(vec3 p) {
-    float t = u_time * 0.35 * u_motion;
-    // Shift metaball cluster toward lower-right corner, clear of hero typography
-    p.x -= 1.15;
-    p.y += 0.85;
-
-    vec3 p1 = p + vec3(sin(t * 0.7) * 0.40, cos(t * 0.5) * 0.30, sin(t * 0.9) * 0.25);
-    vec3 p2 = p + vec3(cos(t * 0.6) * 0.35, sin(t * 0.8) * 0.30, cos(t * 0.4) * 0.25);
-    vec3 p3 = p + vec3(sin(t * 0.4 + 2.0) * 0.30, cos(t * 0.3 + 1.0) * 0.25, sin(t * 0.6 + 3.0) * 0.30);
-
-    // Reduced radii (roughly 60% of original size)
-    float d1 = sdSphere(p1, 0.35);
-    float d2 = sdSphere(p2, 0.26);
-    float d3 = sdSphere(p3, 0.22);
-
-    float d = smin(d1, d2, 0.35);
-    d = smin(d, d3, 0.35);
-    return d;
-  }
-
-  vec3 getNormal(vec3 p) {
-    vec2 e = vec2(0.0015, 0.0);
-    return normalize(vec3(
-      map(p + e.xyy) - map(p - e.xyy),
-      map(p + e.yxy) - map(p - e.yxy),
-      map(p + e.yyx) - map(p - e.yyx)
-    ));
-  }
-
-  // Mint palette matching --accent-prime (#00f5a0)
-  vec3 palette(float t) {
-    vec3 cMint = vec3(0.0, 0.961, 0.628);
-    vec3 cMintSoft = vec3(0.0, 0.70, 0.48);
-    float tt = fract(t * 0.5 + 0.5);
-    return mix(cMintSoft, cMint, tt);
-  }
-
-  void main() {
-    vec2 uv = (vUv - 0.5) * 2.0;
-    uv.x *= u_resolution.x / u_resolution.y;
-
-    vec3 ro = vec3(0.0, 0.0, 4.3 - u_scroll * 0.7);
-    vec3 rd = normalize(vec3(uv, -1.65));
-
-    float dist = 0.0;
-    float minDist = 1e5;
-    vec3 p = ro;
-    bool hit = false;
-    for (int i = 0; i < 60; i++) {
-      p = ro + rd * dist;
-      float d = map(p);
-      minDist = min(minDist, d);
-      if (d < 0.001) { hit = true; break; }
-      dist += d;
-      if (dist > 8.0) break;
-    }
-
-    vec3 color = vec3(0.0);
-    float alpha = 0.0;
-
-    if (hit) {
-      vec3 n = getNormal(p);
-      vec3 viewDir = -rd;
-      vec3 lightDir = normalize(vec3(u_mouse.x * 1.6, u_mouse.y * 1.6 + 0.4, 1.4));
-
-      float diff = clamp(dot(n, lightDir), 0.0, 1.0);
-      float fresnel = pow(1.0 - clamp(dot(n, viewDir), 0.0, 1.0), 3.0);
-      float spec = pow(clamp(dot(reflect(-lightDir, n), viewDir), 0.0, 1.0), 26.0);
-
-      vec3 base = palette(n.x * 0.5 + n.y * 0.35 + u_time * 0.04 * u_motion);
-      color = base * (0.28 + diff * 0.5) + fresnel * base * 0.95 + vec3(1.0) * spec * 0.65;
-      alpha = 0.45;
-    } else {
-      // Soft glow halo around the surface instead of a hard silhouette edge
-      float glow = exp(-minDist * 2.6);
-      vec3 glowColor = palette(u_time * 0.03 * u_motion + 0.15);
-      color = glowColor * glow * 0.6;
-      alpha = glow * 0.18;
-    }
-
-    gl_FragColor = vec4(color, alpha);
-  }
-`;
+const MINT = 0x00f5a0;
+const AMBER = 0xff9e00;
+const HEAD_COLOR = 0x121824;
 
 export function initHero(canvas) {
   if (!canvas) return () => {};
 
   let animationFrameId = null;
   let isIntersecting = true;
-  let mouseX = 0;
-  let mouseY = 0;
   let targetMouseX = 0;
   let targetMouseY = 0;
+  let mouseX = 0;
+  let mouseY = 0;
 
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const scene = new THREE.Scene();
-  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(0, 0, 6.5);
 
   const renderer = new THREE.WebGLRenderer({
     canvas,
@@ -147,48 +45,137 @@ export function initHero(canvas) {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  const uniforms = {
-    u_resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
-    u_time: { value: 0 },
-    u_mouse: { value: new THREE.Vector2(0, 0) },
-    u_scroll: { value: 0 },
-    u_motion: { value: prefersReducedMotion ? 0 : 1 },
-  };
+  // Lights — mint key light + a rare amber rim light for warmth/contrast,
+  // reusing the site's exact two-color accent system as the light colors.
+  const ambient = new THREE.AmbientLight(0xffffff, 0.55);
+  scene.add(ambient);
 
-  const material = new THREE.ShaderMaterial({
-    vertexShader: VERTEX_SHADER,
-    fragmentShader: FRAGMENT_SHADER,
-    uniforms,
-    transparent: true,
-    depthTest: false,
-    depthWrite: false,
+  const keyLight = new THREE.DirectionalLight(MINT, 1.4);
+  keyLight.position.set(-2.2, 2.4, 3.5);
+  scene.add(keyLight);
+
+  const rimLight = new THREE.DirectionalLight(AMBER, 0.5);
+  rimLight.position.set(2.6, -1.2, -2);
+  scene.add(rimLight);
+
+  // Mascot group — de-emphasized corner placement/scale, matching the
+  // previous background element so hero typography still leads.
+  const mascot = new THREE.Group();
+  mascot.position.set(1.9, -1.0, 0);
+  mascot.scale.setScalar(0.85);
+  scene.add(mascot);
+
+  // Head — a plain uniform sphere. A non-uniform "squash" looked appealing
+  // in theory but made hand-placing features on its surface error-prone;
+  // a true sphere keeps every feature's placement math exact and reliable.
+  const HEAD_R = 1.25;
+  const headGeo = new THREE.SphereGeometry(HEAD_R, 32, 24);
+  const headMat = new THREE.MeshStandardMaterial({
+    color: HEAD_COLOR,
+    roughness: 0.45,
+    metalness: 0.15,
+    emissive: new THREE.Color(MINT),
+    emissiveIntensity: 0.1,
   });
+  const head = new THREE.Mesh(headGeo, headMat);
+  mascot.add(head);
 
-  const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), material);
-  scene.add(quad);
+  // Places a feature group on (or just outside) the head's surface along a
+  // given direction, guaranteeing it never ends up embedded inside the head
+  // regardless of how the direction vector is chosen.
+  function onHeadSurface(x, y, z, padding = 0.02) {
+    const dir = new THREE.Vector3(x, y, z).normalize();
+    return dir.multiplyScalar(HEAD_R + padding);
+  }
 
-  // Mouse Parallax (drives the shader's light/reflection direction)
+  // Eyes — cute proportions: large, on/below the head's centerline, spaced
+  // wide, each built from a flattened white sclera disc + a smaller dark
+  // pupil disc that slides within it (translation, not rotation).
+  const PUPIL_RANGE = 0.09; // max distance the pupil can slide from center
+
+  const scleraGeo = new THREE.SphereGeometry(0.32, 24, 18);
+  const scleraMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const pupilGeo = new THREE.CircleGeometry(0.13, 20);
+  const pupilMat = new THREE.MeshBasicMaterial({ color: 0x0a0d14, side: THREE.DoubleSide });
+
+  function makeEye(xSign) {
+    const socket = new THREE.Group();
+    const pos = onHeadSurface(xSign * 0.52, 0.16, 0.82, 0.14);
+    socket.position.copy(pos);
+    socket.lookAt(pos.clone().multiplyScalar(2)); // face straight outward along its own surface normal
+
+    const sclera = new THREE.Mesh(scleraGeo, scleraMat);
+    sclera.scale.set(1, 1, 0.4);
+    socket.add(sclera);
+
+    const pupil = new THREE.Mesh(pupilGeo, pupilMat);
+    pupil.position.z = 0.14;
+    // Built-in slight inward focus — a classic charm trick — biases the
+    // pupils' resting point toward each other before cursor-tracking offsets it.
+    pupil.position.x = -xSign * 0.045;
+    socket.add(pupil);
+
+    mascot.add(socket);
+    return pupil;
+  }
+
+  const pupilLeft = makeEye(-1);
+  const pupilRight = makeEye(1);
+
+  // Eyebrows — small capsules that lift/tilt with vertical cursor position.
+  const browGeo = new THREE.CapsuleGeometry(0.045, 0.4, 4, 8);
+  const browMat = new THREE.MeshBasicMaterial({ color: MINT });
+
+  function makeBrow(xSign) {
+    const pos = onHeadSurface(xSign * 0.52, 0.48, 0.72, 0.05);
+    const brow = new THREE.Mesh(browGeo, browMat);
+    brow.position.copy(pos);
+    brow.lookAt(pos.clone().multiplyScalar(2));
+    brow.rotation.z += xSign * 0.35;
+    mascot.add(brow);
+    return brow;
+  }
+
+  const browLeft = makeBrow(-1);
+  const browRight = makeBrow(1);
+  const browBaseY = { left: browLeft.position.y, right: browRight.position.y };
+
+  // Mouth — a small simple capsule. Research on cute-character design says
+  // minimal-to-omitted reads younger/friendlier than an elaborate shape, and
+  // a straight capsule sidesteps the arc-orientation math a curved smile needs.
+  const mouthGeo = new THREE.CapsuleGeometry(0.035, 0.5, 4, 8);
+  const mouthMat = new THREE.MeshBasicMaterial({ color: MINT });
+  const mouth = new THREE.Mesh(mouthGeo, mouthMat);
+  const mouthPos = onHeadSurface(0, -0.55, 0.75, 0.03);
+  mouth.position.copy(mouthPos);
+  mouth.lookAt(mouthPos.clone().multiplyScalar(2));
+  mouth.rotation.z = Math.PI / 2;
+  mascot.add(mouth);
+
+  // Mouse tracking (drives pupil offset + a subtle head/brow reaction)
   const handleMouseMove = (event) => {
     targetMouseX = (event.clientX / window.innerWidth - 0.5) * 2;
     targetMouseY = -(event.clientY / window.innerHeight - 0.5) * 2;
   };
   window.addEventListener('mousemove', handleMouseMove);
 
-  // Scroll (drives a slow camera dolly via u_scroll, 0-1 across the hero)
+  // Scroll (drives a slow camera dolly, matching the site's established hero interactivity)
+  let scrollProgress = 0;
   const handleScroll = () => {
     const heroHeight = document.getElementById('home')?.offsetHeight || window.innerHeight;
-    uniforms.u_scroll.value = Math.min(1, Math.max(0, window.scrollY / heroHeight));
+    scrollProgress = Math.min(1, Math.max(0, window.scrollY / heroHeight));
   };
   window.addEventListener('scroll', handleScroll, { passive: true });
-  handleScroll(); // sync on load — e.g. a restored scroll position or deep link
+  handleScroll();
 
   // Resize Handling
   const handleResize = () => {
     const width = window.innerWidth;
     const height = window.innerHeight;
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    uniforms.u_resolution.value.set(width, height);
   };
   window.addEventListener('resize', handleResize);
 
@@ -223,23 +210,49 @@ export function initHero(canvas) {
   const animate = () => {
     if (!isIntersecting || document.hidden) {
       animationFrameId = null;
-      clock.stop(); // freeze elapsed time so a long pause doesn't jump on resume
+      clock.stop();
       return;
     }
 
     if (!clock.running) clock.start();
+    const t = clock.getElapsedTime();
 
-    uniforms.u_time.value = clock.getElapsedTime();
+    // Ease mouse toward target. Under reduced motion the loop only ever
+    // runs once (see the early-return below), so this renders a single
+    // static frame with default pupil position rather than live tracking —
+    // consistent with how the rest of this hero treats reduced motion.
+    const easing = 0.12;
+    mouseX += (targetMouseX - mouseX) * easing;
+    mouseY += (targetMouseY - mouseY) * easing;
 
-    // Lerp mouse toward target for a smooth, slightly trailing light source
-    mouseX += (targetMouseX - mouseX) * 0.06;
-    mouseY += (targetMouseY - mouseY) * 0.06;
-    uniforms.u_mouse.value.set(mouseX, mouseY);
+    // Googly-eye pupil offset: translate within the socket, clamped to PUPIL_RANGE.
+    const offsetX = THREE.MathUtils.clamp(mouseX * PUPIL_RANGE, -PUPIL_RANGE, PUPIL_RANGE);
+    const offsetY = THREE.MathUtils.clamp(mouseY * PUPIL_RANGE, -PUPIL_RANGE, PUPIL_RANGE);
+    pupilLeft.position.x = -0.045 + offsetX;
+    pupilLeft.position.y = offsetY;
+    pupilRight.position.x = 0.045 + offsetX;
+    pupilRight.position.y = offsetY;
+
+    // Eyebrows lift/tilt with vertical cursor position — a quick "amazed" reaction.
+    browLeft.position.y = browBaseY.left + offsetY * 0.5;
+    browRight.position.y = browBaseY.right + offsetY * 0.5;
+
+    if (!prefersReducedMotion) {
+      // Idle breathing — subtle squash/stretch so the simple geometry feels alive.
+      const breathe = Math.sin(t * 1.6) * 0.02;
+      head.scale.set(1 - breathe * 0.6, 1 + breathe, 1 - breathe * 0.6);
+
+      // A very slow idle head sway, independent of cursor tracking.
+      mascot.rotation.y = Math.sin(t * 0.4) * 0.06 + mouseX * 0.08;
+      mascot.rotation.x = mouseY * 0.05;
+    }
+
+    // Scroll dolly — camera drifts back slightly as the visitor scrolls away.
+    camera.position.z = 6.5 + scrollProgress * 1.2;
+    camera.lookAt(mascot.position);
 
     renderer.render(scene, camera);
 
-    // A static reduced-motion frame never changes — render once and stop
-    // scheduling instead of burning GPU/battery on identical frames forever.
     if (prefersReducedMotion) {
       animationFrameId = null;
       return;
@@ -261,8 +274,8 @@ export function initHero(canvas) {
     window.removeEventListener('resize', handleResize);
     document.removeEventListener('visibilitychange', handleVisibilityChange);
 
-    quad.geometry.dispose();
-    material.dispose();
+    [headGeo, scleraGeo, pupilGeo, browGeo, mouthGeo].forEach((g) => g.dispose());
+    [headMat, scleraMat, pupilMat, browMat, mouthMat].forEach((m) => m.dispose());
     renderer.dispose();
   };
 }

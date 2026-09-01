@@ -1,24 +1,22 @@
 import * as THREE from 'three';
 
 /* ==========================================================================
-   HERO BACKGROUND — CARTOON MASCOT WITH CURSOR-TRACKING EYES
+   HERO BACKGROUND — PROCEDURAL 3D ANIME LIKENESS
    ==========================================================================
-   A friendly procedural low-poly character (no external model/photo — pure
-   Three.js primitives) whose pupils slide toward the cursor "googly eye"
-   style: a flat dark pupil disc translated within its eye socket, clamped
-   to a max radius and eased toward the target each frame, not a full
-   eyeball rotation. Head follows "cute" proportions (eyes on/below the
-   centerline, big relative to the head, slight built-in inward focus) per
-   character-design research. Sits at the same de-emphasized corner
-   position/scale as the previous background element so the hero's bold
-   typography still carries the section — this is a charming detail, not
-   the focal point. Scroll drives a slow camera dolly, matching the
-   interactivity established elsewhere in the hero.
+   A custom procedural 3D cartoon/anime style likeness built using only 
+   Three.js primitives. Features:
+   - Wavy dark hair clusters
+   - Translucent sporty sunglasses
+   - Googly eyes that track the cursor behind the glasses
+   - Wide toothy smile
+   - Red string necklace & black tee
    ========================================================================== */
 
 const MINT = 0x00f5a0;
 const AMBER = 0xff9e00;
-const HEAD_COLOR = 0x121824;
+const SKIN_COLOR = 0xF1C27D;
+const HAIR_COLOR = 0x181818;
+const SHIRT_COLOR = 0x121212;
 
 export function initHero(canvas) {
   if (!canvas) return () => {};
@@ -45,121 +43,200 @@ export function initHero(canvas) {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-  // Lights — mint key light + a rare amber rim light for warmth/contrast,
-  // reusing the site's exact two-color accent system as the light colors.
-  const ambient = new THREE.AmbientLight(0xffffff, 0.55);
+  // Lights — combining realistic white ambient with the site's mint/amber accents
+  const ambient = new THREE.AmbientLight(0xffffff, 0.6);
   scene.add(ambient);
 
-  const keyLight = new THREE.DirectionalLight(MINT, 1.4);
+  const keyLight = new THREE.DirectionalLight(MINT, 1.2);
   keyLight.position.set(-2.2, 2.4, 3.5);
   scene.add(keyLight);
 
-  const rimLight = new THREE.DirectionalLight(AMBER, 0.5);
+  const rimLight = new THREE.DirectionalLight(AMBER, 0.8);
   rimLight.position.set(2.6, -1.2, -2);
   scene.add(rimLight);
 
-  // Mascot group — de-emphasized corner placement/scale, matching the
-  // previous background element so hero typography still leads.
+  // -------------------------------------------------------------
+  // MASCOT CONSTRUCTION
+  // -------------------------------------------------------------
   const mascot = new THREE.Group();
-  mascot.position.set(1.9, -1.0, 0);
-  mascot.scale.setScalar(0.85);
+  mascot.position.set(1.9, -0.6, 0);
+  mascot.scale.setScalar(0.7);
   scene.add(mascot);
 
-  // Head — a plain uniform sphere. A non-uniform "squash" looked appealing
-  // in theory but made hand-placing features on its surface error-prone;
-  // a true sphere keeps every feature's placement math exact and reliable.
-  const HEAD_R = 1.25;
-  const headGeo = new THREE.SphereGeometry(HEAD_R, 32, 24);
-  const headMat = new THREE.MeshStandardMaterial({
-    color: HEAD_COLOR,
-    roughness: 0.45,
-    metalness: 0.15,
-    emissive: new THREE.Color(MINT),
-    emissiveIntensity: 0.1,
-  });
-  const head = new THREE.Mesh(headGeo, headMat);
-  mascot.add(head);
+  const disposables = [];
 
-  // Places a feature group on (or just outside) the head's surface along a
-  // given direction, guaranteeing it never ends up embedded inside the head
-  // regardless of how the direction vector is chosen.
-  function onHeadSurface(x, y, z, padding = 0.02) {
-    const dir = new THREE.Vector3(x, y, z).normalize();
-    return dir.multiplyScalar(HEAD_R + padding);
+  function addMesh(geometry, material, parent) {
+    const mesh = new THREE.Mesh(geometry, material);
+    parent.add(mesh);
+    if (!disposables.includes(geometry)) disposables.push(geometry);
+    if (!disposables.includes(material)) disposables.push(material);
+    return mesh;
   }
 
-  // Eyes — cute proportions: large, on/below the head's centerline, spaced
-  // wide, each built from a flattened white sclera disc + a smaller dark
-  // pupil disc that slides within it (translation, not rotation).
-  const PUPIL_RANGE = 0.09; // max distance the pupil can slide from center
+  // 1. Head Base
+  const headGroup = new THREE.Group();
+  mascot.add(headGroup);
 
-  const scleraGeo = new THREE.SphereGeometry(0.32, 24, 18);
+  const headGeo = new THREE.SphereGeometry(1.0, 32, 32);
+  const skinMat = new THREE.MeshStandardMaterial({
+    color: SKIN_COLOR,
+    roughness: 0.5,
+    metalness: 0.1,
+  });
+  const headBase = addMesh(headGeo, skinMat, headGroup);
+  headBase.scale.set(1.05, 1.1, 0.95);
+
+  const noseGeo = new THREE.ConeGeometry(0.08, 0.18, 16);
+  const nose = addMesh(noseGeo, skinMat, headGroup);
+  nose.position.set(0, -0.05, 0.96);
+  nose.rotation.x = Math.PI / 2.2;
+
+  // 2. Eyes (Tracking)
+  const EYE_Y = 0.1;
+  const EYE_Z = 0.85;
+  const EYE_X = 0.35;
+  const PUPIL_RANGE = 0.12;
+
+  const scleraGeo = new THREE.SphereGeometry(0.28, 24, 18);
   const scleraMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-  const pupilGeo = new THREE.CircleGeometry(0.13, 20);
-  const pupilMat = new THREE.MeshBasicMaterial({ color: 0x0a0d14, side: THREE.DoubleSide });
+  const pupilGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.02, 20);
+  const pupilMat = new THREE.MeshBasicMaterial({ color: 0x1c1c1e });
 
   function makeEye(xSign) {
     const socket = new THREE.Group();
-    const pos = onHeadSurface(xSign * 0.52, 0.16, 0.82, 0.14);
-    socket.position.copy(pos);
-    socket.lookAt(pos.clone().multiplyScalar(2)); // face straight outward along its own surface normal
+    socket.position.set(xSign * EYE_X, EYE_Y, EYE_Z);
+    
+    // Angle sockets outward slightly for spherical placement
+    socket.rotation.y = xSign * 0.2;
 
-    const sclera = new THREE.Mesh(scleraGeo, scleraMat);
-    sclera.scale.set(1, 1, 0.4);
-    socket.add(sclera);
+    const sclera = addMesh(scleraGeo, scleraMat, socket);
+    sclera.scale.set(1.0, 1.1, 0.15);
 
-    const pupil = new THREE.Mesh(pupilGeo, pupilMat);
-    pupil.position.z = 0.14;
-    // Built-in slight inward focus — a classic charm trick — biases the
-    // pupils' resting point toward each other before cursor-tracking offsets it.
-    pupil.position.x = -xSign * 0.045;
-    socket.add(pupil);
+    const pupil = addMesh(pupilGeo, pupilMat, socket);
+    pupil.rotation.x = Math.PI / 2;
+    pupil.position.z = 0.05;
+    pupil.position.x = -xSign * 0.04; // slight inward resting focus
 
-    mascot.add(socket);
+    headGroup.add(socket);
     return pupil;
   }
 
   const pupilLeft = makeEye(-1);
   const pupilRight = makeEye(1);
 
-  // Eyebrows — small capsules that lift/tilt with vertical cursor position.
-  const browGeo = new THREE.CapsuleGeometry(0.045, 0.4, 4, 8);
-  const browMat = new THREE.MeshBasicMaterial({ color: MINT });
+  // 3. Wavy Dark Hair
+  const hairMat = new THREE.MeshStandardMaterial({ color: HAIR_COLOR, roughness: 0.8 });
+  const hairSphereGeo = new THREE.SphereGeometry(0.45, 16, 16);
+  const hairCapsuleGeo = new THREE.CapsuleGeometry(0.2, 0.5, 8, 16);
 
-  function makeBrow(xSign) {
-    const pos = onHeadSurface(xSign * 0.52, 0.48, 0.72, 0.05);
-    const brow = new THREE.Mesh(browGeo, browMat);
-    brow.position.copy(pos);
-    brow.lookAt(pos.clone().multiplyScalar(2));
-    brow.rotation.z += xSign * 0.35;
-    mascot.add(brow);
-    return brow;
+  // Top crown
+  for(let i=0; i<4; i++) {
+    const h = addMesh(hairSphereGeo, hairMat, headGroup);
+    h.scale.set(1.3, 0.8, 1.1);
+    h.position.set((Math.random()-0.5)*1.2, 0.8 + Math.random()*0.2, (Math.random()-0.5)*0.8);
+    h.rotation.set(Math.random(), Math.random(), Math.random());
   }
+  // Front Bangs
+  for(let i=0; i<4; i++) {
+    const h = addMesh(hairCapsuleGeo, hairMat, headGroup);
+    const xOffset = -0.6 + (i * 0.4);
+    h.position.set(xOffset, 0.65, 0.8);
+    h.rotation.set(0.4, 0, xOffset * 0.5 + 0.2);
+  }
+  // Side & Back locks
+  for(let i=0; i<6; i++) {
+    const h = addMesh(hairCapsuleGeo, hairMat, headGroup);
+    const side = i % 2 === 0 ? 1 : -1;
+    h.position.set(side * 0.9, -0.1 + Math.random()*0.4, -0.3 + Math.random()*0.5);
+    h.rotation.set(Math.random()*0.5, 0, side * 0.4);
+  }
+  // Back bulk
+  const backHair = addMesh(hairSphereGeo, hairMat, headGroup);
+  backHair.scale.set(1.8, 1.2, 1.2);
+  backHair.position.set(0, 0.1, -0.6);
 
-  const browLeft = makeBrow(-1);
-  const browRight = makeBrow(1);
-  const browBaseY = { left: browLeft.position.y, right: browRight.position.y };
+  // 4. Translucent Sunglasses
+  const frameGeo = new THREE.BoxGeometry(0.65, 0.45, 0.05);
+  const frameMat = new THREE.MeshStandardMaterial({ color: 0x080808, roughness: 0.6 });
+  const lensGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.04, 32);
+  const lensMat = new THREE.MeshPhysicalMaterial({
+    color: 0x111111,
+    transmission: 0.6,
+    opacity: 0.8,
+    transparent: true,
+    roughness: 0.1
+  });
+  const bridgeGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.3, 8);
 
-  // Mouth — a small simple capsule. Research on cute-character design says
-  // minimal-to-omitted reads younger/friendlier than an elaborate shape, and
-  // a straight capsule sidesteps the arc-orientation math a curved smile needs.
-  const mouthGeo = new THREE.CapsuleGeometry(0.035, 0.5, 4, 8);
-  const mouthMat = new THREE.MeshBasicMaterial({ color: MINT });
-  const mouth = new THREE.Mesh(mouthGeo, mouthMat);
-  const mouthPos = onHeadSurface(0, -0.55, 0.75, 0.03);
-  mouth.position.copy(mouthPos);
-  mouth.lookAt(mouthPos.clone().multiplyScalar(2));
-  mouth.rotation.z = Math.PI / 2;
-  mascot.add(mouth);
+  const glassesGroup = new THREE.Group();
+  // Pos slightly down nose
+  glassesGroup.position.set(0, EYE_Y - 0.05, EYE_Z + 0.15);
+  headGroup.add(glassesGroup);
 
-  // Mouse tracking (drives pupil offset + a subtle head/brow reaction)
+  const frameL = addMesh(frameGeo, frameMat, glassesGroup);
+  frameL.position.set(-0.38, 0, 0);
+  frameL.rotation.y = -0.1;
+  const lensL = addMesh(lensGeo, lensMat, glassesGroup);
+  lensL.rotation.x = Math.PI / 2;
+  lensL.position.set(-0.38, 0, 0.01);
+  lensL.scale.set(1, 0.6, 1);
+
+  const frameR = addMesh(frameGeo, frameMat, glassesGroup);
+  frameR.position.set(0.38, 0, 0);
+  frameR.rotation.y = 0.1;
+  const lensR = addMesh(lensGeo, lensMat, glassesGroup);
+  lensR.rotation.x = Math.PI / 2;
+  lensR.position.set(0.38, 0, 0.01);
+  lensR.scale.set(1, 0.6, 1);
+
+  const bridge = addMesh(bridgeGeo, frameMat, glassesGroup);
+  bridge.rotation.z = Math.PI / 2;
+  bridge.position.set(0, 0.1, 0.02);
+
+  // 5. Wide Toothy Smile
+  const mouthGroup = new THREE.Group();
+  mouthGroup.position.set(0, -0.38, 0.88);
+  mouthGroup.rotation.x = -0.1;
+  headGroup.add(mouthGroup);
+
+  const cavityGeo = new THREE.SphereGeometry(0.26, 16, 16);
+  const cavityMat = new THREE.MeshBasicMaterial({ color: 0x4a0e17 });
+  const cavity = addMesh(cavityGeo, cavityMat, mouthGroup);
+  cavity.scale.set(1.4, 0.55, 0.15);
+
+  const teethGeo = new THREE.CapsuleGeometry(0.08, 0.35, 8, 8);
+  const teethMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const teeth = addMesh(teethGeo, teethMat, mouthGroup);
+  teeth.rotation.z = Math.PI / 2;
+  teeth.scale.set(1.2, 0.25, 0.15);
+  teeth.position.set(0, 0.06, 0.02);
+
+  // 6. Body & Necklace
+  const bodyGroup = new THREE.Group();
+  mascot.add(bodyGroup);
+
+  const neckGeo = new THREE.CylinderGeometry(0.28, 0.3, 0.5, 16);
+  const neck = addMesh(neckGeo, skinMat, bodyGroup);
+  neck.position.set(0, -1.05, 0);
+
+  const stringGeo = new THREE.TorusGeometry(0.31, 0.02, 8, 32);
+  const stringMat = new THREE.MeshStandardMaterial({ color: 0xe63946, roughness: 0.4 });
+  const necklace = addMesh(stringGeo, stringMat, bodyGroup);
+  necklace.position.set(0, -1.15, 0);
+  necklace.rotation.x = Math.PI / 2 + 0.1;
+
+  const shirtGeo = new THREE.CylinderGeometry(0.62, 0.85, 0.95, 16);
+  const shirtMat = new THREE.MeshStandardMaterial({ color: SHIRT_COLOR, roughness: 0.9 });
+  const shirt = addMesh(shirtGeo, shirtMat, bodyGroup);
+  shirt.position.set(0, -1.65, 0);
+
+  // Mouse tracking 
   const handleMouseMove = (event) => {
     targetMouseX = (event.clientX / window.innerWidth - 0.5) * 2;
     targetMouseY = -(event.clientY / window.innerHeight - 0.5) * 2;
   };
   window.addEventListener('mousemove', handleMouseMove);
 
-  // Scroll (drives a slow camera dolly, matching the site's established hero interactivity)
   let scrollProgress = 0;
   const handleScroll = () => {
     const heroHeight = document.getElementById('home')?.offsetHeight || window.innerHeight;
@@ -168,7 +245,6 @@ export function initHero(canvas) {
   window.addEventListener('scroll', handleScroll, { passive: true });
   handleScroll();
 
-  // Resize Handling
   const handleResize = () => {
     const width = window.innerWidth;
     const height = window.innerHeight;
@@ -179,7 +255,6 @@ export function initHero(canvas) {
   };
   window.addEventListener('resize', handleResize);
 
-  // Visibility & Intersection Observers (pause rendering when offscreen/hidden)
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -217,37 +292,33 @@ export function initHero(canvas) {
     if (!clock.running) clock.start();
     const t = clock.getElapsedTime();
 
-    // Ease mouse toward target. Under reduced motion the loop only ever
-    // runs once (see the early-return below), so this renders a single
-    // static frame with default pupil position rather than live tracking —
-    // consistent with how the rest of this hero treats reduced motion.
     const easing = 0.12;
     mouseX += (targetMouseX - mouseX) * easing;
     mouseY += (targetMouseY - mouseY) * easing;
 
-    // Googly-eye pupil offset: translate within the socket, clamped to PUPIL_RANGE.
+    // Googly-eye pupil tracking
     const offsetX = THREE.MathUtils.clamp(mouseX * PUPIL_RANGE, -PUPIL_RANGE, PUPIL_RANGE);
     const offsetY = THREE.MathUtils.clamp(mouseY * PUPIL_RANGE, -PUPIL_RANGE, PUPIL_RANGE);
-    pupilLeft.position.x = -0.045 + offsetX;
+    pupilLeft.position.x = -0.04 + offsetX;
     pupilLeft.position.y = offsetY;
-    pupilRight.position.x = 0.045 + offsetX;
+    pupilRight.position.x = 0.04 + offsetX;
     pupilRight.position.y = offsetY;
 
-    // Eyebrows lift/tilt with vertical cursor position — a quick "amazed" reaction.
-    browLeft.position.y = browBaseY.left + offsetY * 0.5;
-    browRight.position.y = browBaseY.right + offsetY * 0.5;
-
     if (!prefersReducedMotion) {
-      // Idle breathing — subtle squash/stretch so the simple geometry feels alive.
-      const breathe = Math.sin(t * 1.6) * 0.02;
-      head.scale.set(1 - breathe * 0.6, 1 + breathe, 1 - breathe * 0.6);
+      // Idle breathing — subtle squash/stretch
+      const breathe = Math.sin(t * 1.6) * 0.015;
+      headGroup.scale.set(1 - breathe * 0.5, 1 + breathe, 1 - breathe * 0.5);
+      bodyGroup.scale.set(1 + breathe * 0.3, 1 - breathe * 0.3, 1 + breathe * 0.3);
 
-      // A very slow idle head sway, independent of cursor tracking.
-      mascot.rotation.y = Math.sin(t * 0.4) * 0.06 + mouseX * 0.08;
-      mascot.rotation.x = mouseY * 0.05;
+      // A very slow idle head sway, reacting to cursor tracking.
+      headGroup.rotation.y = Math.sin(t * 0.4) * 0.06 + mouseX * 0.15;
+      headGroup.rotation.x = mouseY * 0.1;
+      
+      // Slight body twist
+      bodyGroup.rotation.y = mouseX * 0.05;
     }
 
-    // Scroll dolly — camera drifts back slightly as the visitor scrolls away.
+    // Scroll dolly
     camera.position.z = 6.5 + scrollProgress * 1.2;
     camera.lookAt(mascot.position);
 
@@ -274,8 +345,7 @@ export function initHero(canvas) {
     window.removeEventListener('resize', handleResize);
     document.removeEventListener('visibilitychange', handleVisibilityChange);
 
-    [headGeo, scleraGeo, pupilGeo, browGeo, mouthGeo].forEach((g) => g.dispose());
-    [headMat, scleraMat, pupilMat, browMat, mouthMat].forEach((m) => m.dispose());
+    disposables.forEach((d) => d.dispose());
     renderer.dispose();
   };
 }

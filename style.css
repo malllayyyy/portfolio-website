@@ -585,6 +585,9 @@ body.modal-open > #aurora-bg {
   justify-content: center;
   padding: 80px 1.5rem 2rem 1.5rem;
   text-align: center;
+  max-width: none;
+  margin: 0;
+  width: 100%;
 }
 
 #hero-canvas {

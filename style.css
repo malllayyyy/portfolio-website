@@ -275,17 +275,17 @@ body.modal-open > #aurora-bg {
 }
 
 /* Staggered Grid Entrance Delay Support
-   Scoped to .skill-item only: project-card/arcade-cabinet already have a
+   Scoped to .tech-badge only: project-card/arcade-cabinet already have a
    continuous tilt-driven entrance (transform/opacity keyed off --tilt) and
    must not have their fast tilt transitions delayed by a stagger offset. */
-.loadout-grid .loadout-card {
+.tech-grid .tech-badge {
   opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transform: translateY(12px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
   transition-delay: var(--stagger-delay, 0ms);
 }
 
-.reveal.is-visible .loadout-grid .loadout-card {
+.reveal.is-visible .tech-grid .tech-badge {
   opacity: 1;
   transform: translateY(0);
 }
@@ -694,136 +694,99 @@ section {
   font-size: 1.05rem;
   line-height: 1.7;
 }
-/* EQUIPPED LOADOUT COMPONENT */
-.loadout-container {
+/* TECH ARSENAL COMPONENT */
+.tech-arsenal {
   display: flex;
   flex-direction: column;
 }
 
-.loadout-title {
+.tech-arsenal-title {
   font-family: var(--font-pixel);
   font-size: 0.9rem;
   color: var(--accent-prime);
   margin-bottom: 1.25rem;
 }
 
-.loadout-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
-  gap: 1.25rem;
-  perspective: 1200px;
-}
-
-.loadout-card {
-  background: var(--bg-surface);
-  border-radius: var(--radius-md);
-  padding: 1.25rem;
-  position: relative;
-  overflow: hidden;
+.tech-arsenal-categories {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  gap: 1.25rem;
 }
 
-.reveal.is-visible .loadout-grid .loadout-card:hover {
-  transform: translateY(-4px);
-}
-
-/* Rarity styling within 2-color system */
-.loadout-card.rarity-legendary {
-  border: 1px solid var(--accent-prime);
-  box-shadow: 0 0 15px rgba(0, 245, 160, 0.2);
-}
-
-.loadout-card.rarity-legendary:hover {
-  box-shadow: 0 0 25px rgba(0, 245, 160, 0.4);
-}
-
-.loadout-card.rarity-epic {
-  border: 1px solid rgba(0, 245, 160, 0.4);
-}
-
-.loadout-card.rarity-epic:hover {
-  border-color: var(--accent-prime);
-  box-shadow: 0 0 15px rgba(0, 245, 160, 0.25);
-}
-
-.loadout-card.rarity-rare {
-  border: 1px solid var(--border-panel);
-}
-
-.loadout-card.rarity-rare:hover {
-  border-color: rgba(0, 245, 160, 0.3);
-}
-
-.loadout-card .card-header {
+.tech-category {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  flex-direction: column;
   gap: 0.5rem;
-  margin-bottom: 0.4rem;
 }
 
-.loadout-card .item-name {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 0.95rem;
-  color: var(--text-primary);
-  line-height: 1.2;
+.tech-category-title {
+  font-family: var(--font-pixel);
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0;
 }
 
-.loadout-card .rarity-badge {
+.tech-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 0.6rem;
+}
+
+.tech-badge {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  text-align: center;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.4s ease;
+}
+
+.reveal.is-visible .tech-grid .tech-badge:hover {
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition-delay: 0ms;
+  transform: translateY(-2px);
+  border-color: var(--accent-prime);
+  box-shadow: 0 0 12px rgba(0, 245, 160, 0.25);
+}
+
+.tech-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+}
+
+.tech-icon-fallback {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-pixel);
   font-size: 0.5rem;
-  padding: 0.2rem 0.4rem;
-  border-radius: 4px;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.rarity-legendary .rarity-badge {
-  background: rgba(0, 245, 160, 0.2);
+  font-weight: 700;
   color: var(--accent-prime);
   border: 1px solid var(--accent-prime);
+  border-radius: var(--radius-sm, 4px);
+  background: rgba(0, 245, 160, 0.08);
+  flex-shrink: 0;
 }
 
-.rarity-epic .rarity-badge {
-  background: rgba(0, 245, 160, 0.1);
-  color: var(--accent-prime);
-  border: 1px solid rgba(0, 245, 160, 0.4);
-}
-
-.rarity-rare .rarity-badge {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-muted);
-  border: 1px solid var(--border-panel);
-}
-
-.loadout-card .slot-tag {
-  font-family: var(--font-pixel);
-  font-size: 0.55rem;
-  color: var(--text-muted);
-  margin-bottom: 0.75rem;
-}
-
-.loadout-card .loadout-stats {
-  list-style: none;
-  margin-bottom: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  font-size: 0.85rem;
+.tech-label {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 500;
   color: var(--text-primary);
-}
-
-.loadout-card .loadout-flavor {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  font-style: italic;
-  border-top: 1px dashed rgba(255, 255, 255, 0.08);
-  padding-top: 0.5rem;
-  margin-top: auto;
+  line-height: 1.15;
+  word-break: break-word;
 }
 /* Quest Map Timeline */
 .quest-map {
@@ -1055,8 +1018,7 @@ section {
 
 .project-card::before,
 .arcade-cabinet::before,
-.save-card::before,
-.loadout-card::before {
+.save-card::before {
   content: "";
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -1074,15 +1036,13 @@ section {
 
 .project-card:hover::before,
 .arcade-cabinet:hover::before,
-.save-card:hover::before,
-.loadout-card:hover::before {
+.save-card:hover::before {
   opacity: 1;
 }
 
 .project-card > *,
 .arcade-cabinet > *,
-.save-card > *,
-.loadout-card > * {
+.save-card > * {
   position: relative;
   z-index: 2;
 }
@@ -1779,7 +1739,7 @@ footer a {
   }
   .project-card,
   .arcade-cabinet,
-  .loadout-card {
+  .tech-badge {
     transform: none !important;
     opacity: 1 !important;
   }

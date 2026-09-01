@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   revealElements.forEach((el) => revealObserver.observe(el));
 
   // Staggered grid entrance index delays
-  const gridContainers = document.querySelectorAll('.loadout-grid, .projects-grid, .arcade-grid');
+  const gridContainers = document.querySelectorAll('.tech-grid, .projects-grid, .arcade-grid');
   gridContainers.forEach((container) => {
     Array.from(container.children).forEach((child, index) => {
       const delay = Math.min(index * 70, 400);
@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       cursor.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) translate(-50%, -50%)`;
     }, { passive: true });
 
-    const hoverables = document.querySelectorAll('a, button, input, textarea, .project-card, .arcade-cabinet, .save-card, .quest-node, .loadout-card');
+    const hoverables = document.querySelectorAll('a, button, input, textarea, .project-card, .arcade-cabinet, .save-card, .quest-node, .tech-badge');
     hoverables.forEach((el) => {
       el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
       el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Cursor-Reactive Spotlight & Magnetic Hover (desktop / non-touch)
   if (!isTouchDevice) {
-    const spotlightCards = document.querySelectorAll('.project-card, .arcade-cabinet, .save-card, .loadout-card');
+    const spotlightCards = document.querySelectorAll('.project-card, .arcade-cabinet, .save-card');
     spotlightCards.forEach((card) => {
       card.addEventListener('mousemove', (e) => {
         const rect = card.getBoundingClientRect();

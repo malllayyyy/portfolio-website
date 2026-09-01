@@ -25,9 +25,9 @@ export function initPong(canvas) {
   let ball = {
     x: WIDTH / 2,
     y: HEIGHT / 2,
-    vx: 5,
-    vy: 3,
-    speed: 6
+    vx: 3.5,
+    vy: 2,
+    speed: 4
   };
 
   const keys = { Up: false, Down: false };
@@ -35,7 +35,7 @@ export function initPong(canvas) {
   function resetBall(scorer) {
     ball.x = WIDTH / 2;
     ball.y = HEIGHT / 2;
-    ball.speed = 6;
+    ball.speed = 4;
     const angle = (Math.random() * Math.PI / 4) - Math.PI / 8;
     const dir = scorer === 'player' ? -1 : 1;
     ball.vx = dir * ball.speed * Math.cos(angle);
@@ -125,7 +125,7 @@ export function initPong(canvas) {
     // AI Tracking
     const aiCenter = aiY + PADDLE_HEIGHT / 2;
     const aiTarget = ball.y;
-    const aiSpeed = 4.8;
+    const aiSpeed = 3.6;
     if (aiCenter < aiTarget - 10) {
       aiY = Math.min(HEIGHT - PADDLE_HEIGHT, aiY + aiSpeed);
     } else if (aiCenter > aiTarget + 10) {
@@ -155,7 +155,7 @@ export function initPong(canvas) {
       ball.vx < 0
     ) {
       ball.x = playerX + PADDLE_WIDTH + BALL_SIZE / 2;
-      ball.speed = Math.min(14, ball.speed * 1.05);
+      ball.speed = Math.min(9, ball.speed * 1.035);
       const hitRatio = (ball.y - (playerY + PADDLE_HEIGHT / 2)) / (PADDLE_HEIGHT / 2);
       const angle = hitRatio * (Math.PI / 3);
       ball.vx = ball.speed * Math.cos(angle);
@@ -172,7 +172,7 @@ export function initPong(canvas) {
       ball.vx > 0
     ) {
       ball.x = aiX - BALL_SIZE / 2;
-      ball.speed = Math.min(14, ball.speed * 1.05);
+      ball.speed = Math.min(9, ball.speed * 1.035);
       const hitRatio = (ball.y - (aiY + PADDLE_HEIGHT / 2)) / (PADDLE_HEIGHT / 2);
       const angle = hitRatio * (Math.PI / 3);
       ball.vx = -ball.speed * Math.cos(angle);
@@ -228,20 +228,20 @@ export function initPong(canvas) {
     ctx.fillText('AI OPPONENT', (3 * WIDTH) / 4, 65);
 
     // Player Paddle (Cyan Glow)
-    ctx.fillStyle = '#5ef5ff';
-    ctx.shadowColor = '#5ef5ff';
+    ctx.fillStyle = '#00f5a0';
+    ctx.shadowColor = '#00f5a0';
     ctx.shadowBlur = 8;
     ctx.fillRect(20, playerY, PADDLE_WIDTH, PADDLE_HEIGHT);
 
     // AI Paddle (Violet Glow)
-    ctx.fillStyle = '#b46bff';
-    ctx.shadowColor = '#b46bff';
+    ctx.fillStyle = '#ff9e00';
+    ctx.shadowColor = '#ff9e00';
     ctx.shadowBlur = 8;
     ctx.fillRect(WIDTH - 20 - PADDLE_WIDTH, aiY, PADDLE_WIDTH, PADDLE_HEIGHT);
 
     // Ball (Green Glow)
-    ctx.fillStyle = '#4ee6a4';
-    ctx.shadowColor = '#4ee6a4';
+    ctx.fillStyle = '#00f5a0';
+    ctx.shadowColor = '#00f5a0';
     ctx.shadowBlur = 10;
     ctx.beginPath();
     ctx.arc(ball.x, ball.y, BALL_SIZE / 2, 0, Math.PI * 2);
@@ -254,13 +254,13 @@ export function initPong(canvas) {
       ctx.fillStyle = 'rgba(5, 7, 13, 0.88)';
       ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-      ctx.fillStyle = playerScore >= WINNING_SCORE ? '#4ee6a4' : '#ff5e5e';
+      ctx.fillStyle = playerScore >= WINNING_SCORE ? '#00f5a0' : '#ff5e5e';
       ctx.font = '16px "Press Start 2P", monospace';
       ctx.textAlign = 'center';
       ctx.fillText(winnerText, WIDTH / 2, HEIGHT / 2 - 30);
 
       // Restart Button
-      ctx.fillStyle = '#5ef5ff';
+      ctx.fillStyle = '#00f5a0';
       ctx.fillRect(WIDTH / 2 - 80, 250, 160, 40);
 
       ctx.fillStyle = '#05070d';

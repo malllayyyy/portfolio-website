@@ -39,23 +39,33 @@ export function initRpg(canvas, onUnlockSkill) {
   const npcs = [
     {
       id: 1,
-      name: 'DevOps Wizard',
-      x: 160,
+      name: 'Deployment Platform',
+      x: 140,
       y: 90,
       width: 24,
       height: 24,
-      color: '#b46bff',
-      text: 'The deployment platform took six phases. Worth it.'
+      color: '#00f5a0',
+      text: 'Self-built PaaS — 6/6 phases shipped, 13/13 tests passing. Push a repo, it goes live.'
     },
     {
       id: 2,
-      name: 'DB Architect',
-      x: 460,
+      name: 'ProAcademys',
+      x: 480,
       y: 90,
       width: 24,
       height: 24,
-      color: '#5ef5ff',
-      text: 'Migrated 37 legacy MySQL tables to MongoDB with 100% parity!'
+      color: '#00f5a0',
+      text: 'Migrated 37 legacy MySQL tables to MongoDB with zero downtime to the live site.'
+    },
+    {
+      id: 3,
+      name: 'GameZone',
+      x: 309,
+      y: 128,
+      width: 24,
+      height: 24,
+      color: '#ff9e00',
+      text: 'Gaming-lounge billing engine, shipped as a real installable Android app.'
     }
   ];
 
@@ -69,6 +79,7 @@ export function initRpg(canvas, onUnlockSkill) {
 
   // Active dialogue box state
   let currentDialogue = null;
+  let activeNearNpcId = null; // id of the NPC currently in proximity, or null
 
   // Keyboard Handlers
   const handleKeyDown = (e) => {
@@ -134,26 +145,13 @@ export function initRpg(canvas, onUnlockSkill) {
   }
 
   function checkNPCInteraction() {
-    let nearNPC = false;
-    npcs.forEach((npc) => {
-      const interactRect = {
-        x: npc.x - 20,
-        y: npc.y - 20,
-        width: npc.width + 40,
-        height: npc.height + 40
-      };
-      if (checkCollision(player, interactRect)) {
-        nearNPC = true;
-        if (currentDialogue && currentDialogue.name === npc.name) {
-          currentDialogue = null;
-        } else {
-          currentDialogue = { name: npc.name, text: npc.text };
-        }
-      }
-    });
-
-    if (!nearNPC && currentDialogue) {
+    if (activeNearNpcId === null) return;
+    const npc = npcs.find((n) => n.id === activeNearNpcId);
+    if (!npc) return;
+    if (currentDialogue && currentDialogue.name === npc.name) {
       currentDialogue = null;
+    } else {
+      currentDialogue = { name: npc.name, text: npc.text };
     }
   }
 
@@ -195,19 +193,25 @@ export function initRpg(canvas, onUnlockSkill) {
 
     if (!collideY) player.y = nextY;
 
-    // Auto-dialogue when stepping into NPC proximity; clear it when walking
-    // away from every NPC so the box doesn't stay stuck on screen.
-    let nearAnyNPC = false;
+    // Auto-dialogue on stepping into NPC proximity (only on the frame
+    // proximity is newly entered, so pressing E to dismiss it isn't
+    // immediately re-opened by this same check on the next frame).
+    // Walking away from every NPC closes it and clears the tracked NPC.
+    let nearNpc = null;
     npcs.forEach((npc) => {
       const nearRect = { x: npc.x - 10, y: npc.y - 10, width: npc.width + 20, height: npc.height + 20 };
       if (checkCollision(player, nearRect)) {
-        nearAnyNPC = true;
-        if (!currentDialogue) {
-          currentDialogue = { name: npc.name, text: npc.text };
-        }
+        nearNpc = npc;
       }
     });
-    if (!nearAnyNPC && currentDialogue) {
+
+    if (nearNpc) {
+      if (activeNearNpcId !== nearNpc.id) {
+        activeNearNpcId = nearNpc.id;
+        currentDialogue = { name: nearNpc.name, text: nearNpc.text };
+      }
+    } else if (activeNearNpcId !== null) {
+      activeNearNpcId = null;
       currentDialogue = null;
     }
 
@@ -248,7 +252,7 @@ export function initRpg(canvas, onUnlockSkill) {
     }
 
     // Outer Room Wall Border
-    ctx.strokeStyle = '#5ef5ff';
+    ctx.strokeStyle = '#00f5a0';
     ctx.lineWidth = 3;
     ctx.strokeRect(10, 10, WIDTH - 20, HEIGHT - 20);
 
@@ -256,7 +260,7 @@ export function initRpg(canvas, onUnlockSkill) {
     walls.forEach((w) => {
       ctx.fillStyle = '#0d1117';
       ctx.fillRect(w.x, w.y, w.width, w.height);
-      ctx.strokeStyle = '#b46bff';
+      ctx.strokeStyle = '#ff9e00';
       ctx.lineWidth = 1.5;
       ctx.strokeRect(w.x, w.y, w.width, w.height);
     });
@@ -266,8 +270,8 @@ export function initRpg(canvas, onUnlockSkill) {
       if (!orb.collected) {
         const floatY = orb.y + Math.sin(orbAnimTime + orb.x) * 4;
 
-        ctx.fillStyle = '#4ee6a4';
-        ctx.shadowColor = '#4ee6a4';
+        ctx.fillStyle = '#00f5a0';
+        ctx.shadowColor = '#00f5a0';
         ctx.shadowBlur = 10;
         ctx.beginPath();
         ctx.arc(orb.x, floatY, orb.radius, 0, Math.PI * 2);
@@ -303,15 +307,15 @@ export function initRpg(canvas, onUnlockSkill) {
       // Interaction prompt
       const nearRect = { x: npc.x - 20, y: npc.y - 20, width: npc.width + 40, height: npc.height + 40 };
       if (checkCollision(player, nearRect)) {
-        ctx.fillStyle = '#ffb454';
+        ctx.fillStyle = '#ff9e00';
         ctx.font = '8px "Press Start 2P", monospace';
         ctx.fillText('[E] TALK', npc.x + npc.width / 2, npc.y + npc.height + 14);
       }
     });
 
     // Player Hero Square
-    ctx.fillStyle = '#5ef5ff';
-    ctx.shadowColor = '#5ef5ff';
+    ctx.fillStyle = '#00f5a0';
+    ctx.shadowColor = '#00f5a0';
     ctx.shadowBlur = 10;
     ctx.fillRect(player.x, player.y, player.width, player.height);
 
@@ -335,12 +339,12 @@ export function initRpg(canvas, onUnlockSkill) {
     // Dialogue Box Overlay
     if (currentDialogue) {
       ctx.fillStyle = 'rgba(13, 17, 23, 0.95)';
-      ctx.strokeStyle = '#5ef5ff';
+      ctx.strokeStyle = '#00f5a0';
       ctx.lineWidth = 2;
       ctx.fillRect(30, HEIGHT - 95, WIDTH - 60, 75);
       ctx.strokeRect(30, HEIGHT - 95, WIDTH - 60, 75);
 
-      ctx.fillStyle = '#ffb454';
+      ctx.fillStyle = '#ff9e00';
       ctx.font = '10px "Press Start 2P", monospace';
       ctx.textAlign = 'left';
       ctx.fillText(`💬 ${currentDialogue.name}:`, 45, HEIGHT - 73);

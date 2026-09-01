@@ -73,7 +73,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (questFill) {
         questFill.style.setProperty('--quest-progress', progress);
-        questFill.style.width = `${progress * 100}%`;
       }
 
       questNodes.forEach((node) => {
@@ -111,6 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }, { passive: true });
 
   // Quest Node click navigation & spotlight pulse
+  const spotlightTimers = new WeakMap();
   questNodes.forEach((node) => {
     node.addEventListener('click', () => {
       const targetId = node.getAttribute('data-target');
@@ -118,10 +118,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       const targetEl = document.querySelector(targetId);
       if (targetEl) {
         targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        clearTimeout(spotlightTimers.get(targetEl));
         targetEl.classList.add('spotlight');
-        setTimeout(() => {
+        spotlightTimers.set(targetEl, setTimeout(() => {
           targetEl.classList.remove('spotlight');
-        }, 1800);
+          spotlightTimers.delete(targetEl);
+        }, 1800));
       }
     });
   });

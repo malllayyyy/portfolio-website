@@ -139,31 +139,37 @@ export function initHero(canvas) {
   const hairMat = new THREE.MeshStandardMaterial({ color: HAIR_COLOR, roughness: 0.8 });
   const hairSphereGeo = new THREE.SphereGeometry(0.45, 16, 16);
   const hairCapsuleGeo = new THREE.CapsuleGeometry(0.2, 0.5, 8, 16);
+  // Hair Base (prevents bald spots on the scalp)
+  const hairBaseGeo = new THREE.SphereGeometry(1.02, 32, 32);
+  const hairBase = addMesh(hairBaseGeo, hairMat, headGroup);
+  hairBase.position.set(0, 0.15, -0.1);
+  hairBase.scale.set(1.05, 1.0, 1.0);
+
   // Top crown
-  for(let i=0; i<4; i++) {
+  for(let i=0; i<5; i++) {
     const h = addMesh(hairSphereGeo, hairMat, headGroup);
-    h.scale.set(1.4, 0.9, 1.2);
-    h.position.set((Math.random()-0.5)*1.2, 1.05 + Math.random()*0.25, (Math.random()-0.5)*0.8 - 0.1);
+    h.scale.set(1.5, 1.0, 1.4);
+    h.position.set((Math.random()-0.5)*1.3, 1.1 + Math.random()*0.2, (Math.random()-0.5)*0.8);
     h.rotation.set(Math.random(), Math.random(), Math.random());
   }
   // Front Bangs
-  for(let i=0; i<4; i++) {
+  for(let i=0; i<5; i++) {
     const h = addMesh(hairCapsuleGeo, hairMat, headGroup);
-    const xOffset = -0.6 + (i * 0.4);
-    h.position.set(xOffset, 0.85, 0.85);
-    h.rotation.set(0.4, 0, xOffset * 0.5 + 0.2);
+    const xOffset = -0.7 + (i * 0.35);
+    h.position.set(xOffset, 0.85 + Math.random()*0.1, 0.95 + Math.random()*0.15);
+    h.rotation.set(0.4 + Math.random()*0.3, 0, xOffset * 0.5);
   }
-  // Side & Back locks
+  // Side locks
   for(let i=0; i<6; i++) {
     const h = addMesh(hairCapsuleGeo, hairMat, headGroup);
     const side = i % 2 === 0 ? 1 : -1;
-    h.position.set(side * 1.0, 0.1 + Math.random()*0.5, -0.3 + Math.random()*0.5);
+    h.position.set(side * 1.05, 0.1 + Math.random()*0.5, -0.1 + Math.random()*0.4);
     h.rotation.set(Math.random()*0.5, 0, side * 0.4);
   }
   // Back bulk
   const backHair = addMesh(hairSphereGeo, hairMat, headGroup);
-  backHair.scale.set(2.2, 1.6, 1.6);
-  backHair.position.set(0, 0.3, -0.65);
+  backHair.scale.set(2.4, 1.8, 1.6);
+  backHair.position.set(0, 0.2, -0.7);
   // 4. Translucent Sunglasses
   const frameGeo = new THREE.BoxGeometry(0.65, 0.45, 0.05);
   const frameMat = new THREE.MeshStandardMaterial({ color: 0x080808, roughness: 0.6 });

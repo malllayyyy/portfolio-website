@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Portfolio of Malay, Full-Stack Developer, Systems Builder, and Game Tinkerer.">
+  <title>Malay — Full-Stack Developer</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Three.js CDN Importmap -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Custom Cursor Reticle -->
+  <div id="custom-cursor" aria-hidden="true"></div>
+
+  <!-- FIXED GAME HUD BAR -->
+  <header id="hud" role="banner">
+    <div class="hud-left">
+      <div id="hud-level" class="hud-level-badge" title="Level based on sections visited">LV. 1</div>
+    </div>
+
+    <div class="hud-center">
+      <div class="hud-xp-label">
+        <span>SCROLL PROGRESS</span>
+        <span id="hud-xp-text">0% XP</span>
+      </div>
+      <div class="hud-xp-track" aria-label="XP Scroll Progress">
+        <div id="hud-xp-bar" class="hud-xp-bar"></div>
+      </div>
+    </div>
+
+    <div class="hud-right">
+      <nav aria-label="Main Navigation">
+        <ul id="hud-nav">
+          <li><a href="#home">Home</a></li>
+          <li><a href="#stats">Stats</a></li>
+          <li><a href="#levels">Levels</a></li>
+          <li><a href="#arcade">Arcade</a></li>
+          <li><a href="#contact">Quest Board</a></li>
+        </ul>
+      </nav>
+
+      <button id="hamburger-btn" class="hamburger-btn" aria-expanded="false" aria-controls="mobile-menu" aria-label="Toggle navigation menu">
+        MENU
+      </button>
+    </div>
+  </header>
+
+  <!-- MOBILE MENU OVERLAY -->
+  <div id="mobile-menu" class="mobile-menu-overlay" aria-hidden="true">
+    <a href="#home" class="mobile-link">HOME</a>
+    <a href="#stats" class="mobile-link">STATS</a>
+    <a href="#levels" class="mobile-link">LEVELS</a>
+    <a href="#arcade" class="mobile-link">ARCADE</a>
+    <a href="#contact" class="mobile-link">QUEST BOARD</a>
+  </div>
+
+  <main>
+    <!-- SECTION 1: HERO / TITLE SCREEN -->
+    <section id="home" aria-label="Hero Title Screen">
+      <canvas id="hero-canvas" aria-hidden="true"></canvas>
+
+      <div class="hero-content">
+        <div class="hero-eyebrow">// FULL-STACK DEVELOPER · SYSTEMS BUILDER · GAME TINKERER</div>
+        <h1 class="pixel-title flicker-text">MALAY</h1>
+        <p class="hero-subtitle">
+          I build things end-to-end — from Docker sandboxes and job queues to pixel-perfect UIs and the odd Pong clone.
+        </p>
+
+        <div class="hero-cta">
+          <a href="#levels" class="btn btn-primary">▶ START</a>
+          <a href="#stats" class="btn btn-secondary">STATS</a>
+        </div>
+      </div>
+
+      <div class="scroll-hint" aria-hidden="true">▼ scroll</div>
+    </section>
+
+    <!-- SECTION 2: STATS / ABOUT -->
+    <section id="stats" aria-labelledby="stats-heading" class="reveal">
+      <h2 id="stats-heading" class="pixel-heading">CHARACTER STATS</h2>
+      <p class="section-subtitle">Level 1 Full-Stack Systems Architect & Game Tinkerer</p>
+
+      <div class="character-sheet">
+        <!-- Bio Card -->
+        <div class="bio-card">
+          <h3>// BIOGRAPHY</h3>
+          <p>
+            I build complete digital products solo — architecting robust backend infrastructure (queues, containerized builds, auth systems) and crafting responsive, animated frontends. Beyond full-stack development, I tinker with 2D game loops and interactive Canvas experiments for fun.
+          </p>
+        </div>
+
+        <!-- 6 Skill Bars -->
+        <div class="skills-list">
+          <div class="skill-item">
+            <div class="skill-header">
+              <span>Backend / APIs</span>
+              <span>90%</span>
+            </div>
+            <div class="skill-bar-track">
+              <div class="skill-bar-fill" data-fill="90%"></div>
+            </div>
+            <div class="skill-chips">Node.js, Express, layered architecture</div>
+          </div>
+
+          <div class="skill-item">
+            <div class="skill-header">
+              <span>Frontend / UI</span>
+              <span>85%</span>
+            </div>
+            <div class="skill-bar-track">
+              <div class="skill-bar-fill" data-fill="85%"></div>
+            </div>
+            <div class="skill-chips">React, Vite, Tailwind, vanilla JS, GSAP</div>
+          </div>
+
+          <div class="skill-item">
+            <div class="skill-header">
+              <span>Databases</span>
+              <span>80%</span>
+            </div>
+            <div class="skill-bar-track">
+              <div class="skill-bar-fill" data-fill="80%"></div>
+            </div>
+            <div class="skill-chips">PostgreSQL, MongoDB, MySQL, Redis</div>
+          </div>
+
+          <div class="skill-item">
+            <div class="skill-header">
+              <span>DevOps / Infra</span>
+              <span>82%</span>
+            </div>
+            <div class="skill-bar-track">
+              <div class="skill-bar-fill" data-fill="82%"></div>
+            </div>
+            <div class="skill-chips">Docker, BullMQ, MinIO, CI-less auto-deploy</div>
+          </div>
+
+          <div class="skill-item">
+            <div class="skill-header">
+              <span>Auth & Payments</span>
+              <span>78%</span>
+            </div>
+            <div class="skill-bar-track">
+              <div class="skill-bar-fill" data-fill="78%"></div>
+            </div>
+            <div class="skill-chips">JWT, OAuth, Razorpay, sessions</div>
+          </div>
+
+          <div class="skill-item">
+            <div class="skill-header">
+              <span>Game Dev (for fun)</span>
+              <span>65%</span>
+            </div>
+            <div class="skill-bar-track">
+              <div class="skill-bar-fill" data-fill="65%"></div>
+            </div>
+            <div class="skill-chips">Canvas 2D, Three.js, game loops</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quest Map Timeline -->
+      <div class="quest-map">
+        <h3 class="quest-map-title">THE JOURNEY SO FAR</h3>
+        <div class="quest-track">
+          <div class="quest-track-fill" id="quest-fill"></div>
+          <button class="quest-node" data-progress="0" data-target="#arcade">
+            <span class="quest-node-icon">🕹️</span>
+            <span class="quest-node-label">Pixel Beginnings</span>
+            <span class="quest-node-sub">Pong &amp; a 2D RPG room</span>
+          </button>
+          <button class="quest-node" data-progress="0.33" data-target="#project-gamezone">
+            <span class="quest-node-icon">🎮</span>
+            <span class="quest-node-label">GameZone</span>
+            <span class="quest-node-sub">Gaming-lounge Android app</span>
+          </button>
+          <button class="quest-node" data-progress="0.66" data-target="#project-proacademys">
+            <span class="quest-node-icon">🎓</span>
+            <span class="quest-node-label">ProAcademys</span>
+            <span class="quest-node-sub">Full MERN platform rewrite</span>
+          </button>
+          <button class="quest-node" data-progress="1" data-target="#project-deploy">
+            <span class="quest-node-icon">🚀</span>
+            <span class="quest-node-label">Deployment Platform</span>
+            <span class="quest-node-sub">Self-built PaaS, boss level</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: LEVELS / PROJECTS -->
+    <section id="levels" aria-labelledby="levels-heading" class="reveal">
+      <h2 id="levels-heading" class="pixel-heading">SELECT YOUR LEVEL</h2>
+      <p class="section-subtitle">Mission Log & Featured Work</p>
+
+      <div class="projects-grid">
+        <!-- Card 1: Deployment Platform -->
+        <article class="project-card" id="project-deploy">
+          <div>
+            <div class="card-top">
+              <div class="stars" aria-label="Difficulty 5 out of 5 stars">★★★★★</div>
+              <span class="status-badge complete">COMPLETE</span>
+            </div>
+            <h3 class="project-title">Deployment Platform</h3>
+            <p class="project-tagline">
+              A self-built Vercel/Netlify-style PaaS — push a repo, it builds in an isolated container and goes live on a subdomain.
+            </p>
+            <div class="tech-chips">
+              <span class="chip">Node.js</span>
+              <span class="chip">Express</span>
+              <span class="chip">Docker</span>
+              <span class="chip">BullMQ</span>
+              <span class="chip">Redis</span>
+              <span class="chip">PostgreSQL</span>
+              <span class="chip">MinIO</span>
+              <span class="chip">React</span>
+              <span class="chip">Vite</span>
+              <span class="chip">Three.js</span>
+              <span class="chip">GSAP</span>
+              <span class="chip">Socket.IO</span>
+            </div>
+          </div>
+
+          <div>
+            <button class="accordion-btn" aria-expanded="false" aria-controls="log-1">
+              <span>▸ VIEW MISSION LOG</span>
+              <span class="acc-icon">▼</span>
+            </button>
+            <div id="log-1" class="accordion-content">
+              <ul class="mission-bullets">
+                <li>Full pipeline: clone → isolated Docker build → upload to MinIO → live subdomain via a custom reverse proxy, versioned deployments with one-click rollback</li>
+                <li>Real-time build logs streamed over Socket.IO into a React dashboard with a Three.js hero and GSAP-animated transitions</li>
+                <li>JWT-free custom session auth (stdlib scrypt hashing + HMAC-signed cookies, no auth library), per-user project ownership enforcement</li>
+                <li>Lockfile-hashed build caching (node_modules reuse across builds) and per-project build-time environment variables injected safely via Docker argv (never shell-interpolated)</li>
+                <li>All 6 build phases shipped and verified end-to-end; 13/13 automated tests passing</li>
+              </ul>
+              <div class="project-links">
+                <span class="no-link-note">Local build — repo private for now</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 2: ProAcademys -->
+        <article class="project-card" id="project-proacademys">
+          <div>
+            <div class="card-top">
+              <div class="stars" aria-label="Difficulty 4 out of 5 stars">★★★★☆</div>
+              <span class="status-badge live">LIVE</span>
+            </div>
+            <h3 class="project-title">ProAcademys</h3>
+            <p class="project-tagline">
+              Full ground-up rewrite of a live e-learning platform — legacy PHP to a modern MERN stack, with zero downtime to the original site.
+            </p>
+            <div class="tech-chips">
+              <span class="chip">React</span>
+              <span class="chip">Vite</span>
+              <span class="chip">Tailwind CSS</span>
+              <span class="chip">Node.js</span>
+              <span class="chip">Express</span>
+              <span class="chip">MongoDB Atlas</span>
+              <span class="chip">JWT</span>
+              <span class="chip">Google OAuth</span>
+              <span class="chip">Razorpay</span>
+            </div>
+          </div>
+
+          <div>
+            <button class="accordion-btn" aria-expanded="false" aria-controls="log-2">
+              <span>▸ VIEW MISSION LOG</span>
+              <span class="acc-icon">▼</span>
+            </button>
+            <div id="log-2" class="accordion-content">
+              <ul class="mission-bullets">
+                <li>Rebuilt a production Laravel/PHP e-learning site as MERN — layered backend (routes → controllers → services → repositories) to eliminate bugs that plagued the original (duplicated payment logic, conflicting routes)</li>
+                <li>Migrated the full legacy MySQL database (37 tables) into MongoDB with versioned, re-runnable migration scripts and row-count parity reports</li>
+                <li>Built the whole product surface: course catalog, quizzes with scored results, certificates, Razorpay payments with coupons, and a full admin panel (courses, enrollments, users, live classes, blog, support)</li>
+                <li>Solved a gnarly cross-site cookie auth bug (Vercel frontend + Render backend) with a same-origin API proxy rewrite instead of just cookie flags</li>
+              </ul>
+              <div class="project-links">
+                <a href="https://proacademys-client.vercel.app/" target="_blank" rel="noopener">🌐 Live Demo ↗</a>
+                <a href="https://github.com/malllayyyy/proacademys-client" target="_blank" rel="noopener">💻 Frontend Repo ↗</a>
+                <a href="https://github.com/malllayyyy/proacademys-server" target="_blank" rel="noopener">⚙️ Backend Repo ↗</a>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 3: GameZone -->
+        <article class="project-card" id="project-gamezone">
+          <div>
+            <div class="card-top">
+              <div class="stars" aria-label="Difficulty 3 out of 5 stars">★★★☆☆</div>
+              <span class="status-badge complete">COMPLETE</span>
+            </div>
+            <h3 class="project-title">GameZone</h3>
+            <p class="project-tagline">
+              A gaming-lounge management system — station/session tracking and time-based billing, packaged as a native Android app.
+            </p>
+            <div class="tech-chips">
+              <span class="chip">React</span>
+              <span class="chip">Vite</span>
+              <span class="chip">Tailwind CSS</span>
+              <span class="chip">Express</span>
+              <span class="chip">SQLite</span>
+              <span class="chip">Capacitor (Android)</span>
+            </div>
+          </div>
+
+          <div>
+            <button class="accordion-btn" aria-expanded="false" aria-controls="log-3">
+              <span>▸ VIEW MISSION LOG</span>
+              <span class="acc-icon">▼</span>
+            </button>
+            <div id="log-3" class="accordion-content">
+              <ul class="mission-bullets">
+                <li>Tracks gaming stations and live sessions (active/paused), with a pricing engine that bills by duration, hourly rate, and per-activity minimum charge</li>
+                <li>Single Express + SQLite backend serving both the REST API and the built React frontend as static files</li>
+                <li>Shipped as an installable native Android app via Capacitor, not just a web page</li>
+              </ul>
+              <div class="project-links">
+                <span class="no-link-note">Local build — Android APK build</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- SECTION 4: ARCADE -->
+    <section id="arcade" aria-labelledby="arcade-heading" class="reveal">
+      <h2 id="arcade-heading" class="pixel-heading">INSERT COIN</h2>
+      <p class="section-subtitle">Two playable recreations of the games I cut my teeth on. Actually playable — go on.</p>
+
+      <div class="arcade-grid">
+        <!-- Cabinet 1: Pong -->
+        <div class="arcade-cabinet">
+          <div class="cabinet-header">PONG 1972</div>
+          <div class="cabinet-screen-preview">
+            <div class="preview-title">PONG</div>
+            <div class="preview-subtitle">Arcade Tennis Classic</div>
+          </div>
+          <button id="open-pong-btn" class="btn btn-primary">▶ PLAY</button>
+        </div>
+
+        <!-- Cabinet 2: Pixel Quest -->
+        <div class="arcade-cabinet">
+          <div class="cabinet-header">PIXEL QUEST</div>
+          <div class="cabinet-screen-preview">
+            <div class="preview-title">2D RPG ROOM</div>
+            <div class="preview-subtitle">Explorable Tech Room</div>
+          </div>
+          <button id="open-rpg-btn" class="btn btn-primary">▶ PLAY</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: QUEST BOARD / CONTACT -->
+    <section id="contact" aria-labelledby="contact-heading" class="reveal">
+      <h2 id="contact-heading" class="pixel-heading">QUEST BOARD — GET IN TOUCH</h2>
+      <p class="section-subtitle">Save Point: Drop a message or find me online.</p>
+
+      <div class="contact-layout">
+        <!-- Save Point Cards -->
+        <div class="contact-cards">
+          <a href="mailto:malayrc276@gmail.com" class="save-card">
+            <div class="card-icon">✉️</div>
+            <div class="card-info">
+              <h4>EMAIL</h4>
+              <p>malayrc276@gmail.com</p>
+            </div>
+          </a>
+
+          <a href="https://github.com/malllayyyy" target="_blank" rel="noopener" class="save-card">
+            <div class="card-icon">💻</div>
+            <div class="card-info">
+              <h4>GITHUB</h4>
+              <p>github.com/malllayyyy</p>
+            </div>
+          </a>
+
+          <!-- TODO: add real LinkedIn URL -->
+          <a href="#" data-missing="true" class="save-card missing">
+            <div class="card-icon">💼</div>
+            <div class="card-info">
+              <h4>LINKEDIN</h4>
+              <p>LinkedIn (Coming Soon)</p>
+            </div>
+          </a>
+        </div>
+
+        <!-- Message Form -->
+        <form id="quest-form" class="contact-form">
+          <div class="form-group">
+            <label for="form-name">PLAYER NAME</label>
+            <input type="text" id="form-name" required placeholder="Your Name">
+          </div>
+
+          <div class="form-group">
+            <label for="form-email">EMAIL ADDRESS</label>
+            <input type="email" id="form-email" required placeholder="your.email@domain.com">
+          </div>
+
+          <div class="form-group">
+            <label for="form-message">QUEST MESSAGE</label>
+            <textarea id="form-message" rows="4" required placeholder="Write your message here..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">📜 SEND QUEST</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>Built solo with vanilla JS + Three.js. No frameworks were harmed. © 2026 Malay.</p>
+    <p style="margin-top: 0.5rem; font-size: 0.8rem;">
+      <a href="https://github.com/malllayyyy" target="_blank" rel="noopener">GitHub</a> · 
+      <a href="mailto:malayrc276@gmail.com">Email</a>
+    </p>
+  </footer>
+
+  <!-- ARCADE GAME MODALS -->
+  <!-- 1. Pong Modal -->
+  <div id="pong-modal" class="game-modal" role="dialog" aria-modal="true" aria-labelledby="pong-modal-title" aria-hidden="true">
+    <div class="arcade-frame">
+      <div class="modal-header">
+        <h3 id="pong-modal-title" class="modal-title">PONG ARCADE</h3>
+        <button id="pong-close" class="close-btn" aria-label="Close Pong Game">✕</button>
+      </div>
+      <canvas id="pong-canvas" class="game-canvas"></canvas>
+      <div class="controls-hint">Controls: Mouse move / Arrow keys / W-S</div>
+
+      <!-- Touch Controls -->
+      <div class="touch-controls">
+        <button id="pong-btn-up" class="touch-btn" style="width: 70px; height: 40px;">▲ UP</button>
+        <button id="pong-btn-down" class="touch-btn" style="width: 70px; height: 40px;">▼ DOWN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. RPG Modal -->
+  <div id="rpg-modal" class="game-modal" role="dialog" aria-modal="true" aria-labelledby="rpg-modal-title" aria-hidden="true">
+    <div class="arcade-frame">
+      <div class="modal-header">
+        <h3 id="rpg-modal-title" class="modal-title">PIXEL QUEST (2D RPG)</h3>
+        <button id="rpg-close" class="close-btn" aria-label="Close Pixel Quest Game">✕</button>
+      </div>
+      <canvas id="rpg-canvas" class="game-canvas"></canvas>
+      <div class="controls-hint">Controls: WASD / Arrow keys · Interacts: Walk into NPC or press E</div>
+
+      <!-- Touch Controls -->
+      <div class="touch-controls" style="align-items: center;">
+        <div class="dpad-grid">
+          <div></div>
+          <button id="rpg-btn-up" class="touch-btn">▲</button>
+          <div></div>
+          <button id="rpg-btn-left" class="touch-btn">◀</button>
+          <div></div>
+          <button id="rpg-btn-right" class="touch-btn">▶</button>
+          <div></div>
+          <button id="rpg-btn-down" class="touch-btn">▼</button>
+          <div></div>
+        </div>
+        <button id="rpg-btn-action" class="touch-btn" style="width: 60px; height: 60px; border-radius: 50%;">[E]</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- KONAMI CHEAT OVERLAY -->
+  <div id="cheat-overlay" aria-hidden="true">
+    <div class="cheat-banner">
+      CHEAT CODE ACTIVATED!<br>
+      UNLIMITED XP UNLOCKED!
+    </div>
+  </div>
+
+  <!-- JavaScript Module -->
+  <script type="module" src="script.js"></script>
+</body>
+</html>

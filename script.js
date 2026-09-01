@@ -6,6 +6,46 @@ import { initPong } from './games/pong.js';
 import { initRpg } from './games/rpg.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ------------------------------------------------------------------------
+  // PRESS START BOOT SEQUENCE (SESSION-GATED, SKIPPABLE)
+  //    Runs first and fully synchronously (no await above it) so the
+  //    dismiss listeners and hard timeout are live before any network work
+  //    (the Three.js CDN import below) can stall the page.
+  // ------------------------------------------------------------------------
+  const bootOverlay = document.getElementById('boot-overlay');
+  if (bootOverlay) {
+    const bootSeen = sessionStorage.getItem('bootSeen');
+    if (bootSeen || prefersReducedMotion) {
+      bootOverlay.remove();
+    } else {
+      sessionStorage.setItem('bootSeen', 'true');
+      let dismissed = false;
+      const dismissBoot = () => {
+        if (dismissed) return;
+        dismissed = true;
+
+        window.removeEventListener('keydown', dismissBoot);
+        window.removeEventListener('click', dismissBoot);
+        window.removeEventListener('touchstart', dismissBoot);
+
+        bootOverlay.classList.add('fading');
+        setTimeout(() => {
+          if (bootOverlay.parentNode) {
+            bootOverlay.remove();
+          }
+        }, 250);
+      };
+
+      window.addEventListener('keydown', dismissBoot, { once: true });
+      window.addEventListener('click', dismissBoot, { once: true });
+      window.addEventListener('touchstart', dismissBoot, { once: true });
+
+      setTimeout(dismissBoot, 1400);
+    }
+  }
+
   // ------------------------------------------------------------------------
   // 1. THREE.JS HERO BACKGROUND INITIALIZATION
   //    Dynamic import so a CDN/offline failure can't take down the rest of
@@ -37,8 +77,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const questFill = document.getElementById('quest-fill');
   const questNodes = document.querySelectorAll('.quest-node');
 
-  // 3D Card Tilt Observer & Set
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const cardElements = document.querySelectorAll('.project-card, .arcade-cabinet');
   const intersectingCards = new Set();
 
@@ -224,9 +262,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
   }, { threshold: 0.15 });
-
   revealElements.forEach((el) => revealObserver.observe(el));
 
+  // Staggered grid entrance index delays
+  const gridContainers = document.querySelectorAll('.skills-list, .projects-grid, .arcade-grid');
+  gridContainers.forEach((container) => {
+    Array.from(container.children).forEach((child, index) => {
+      const delay = Math.min(index * 70, 400);
+      child.style.setProperty('--stagger-delay', `${delay}ms`);
+    });
+  });
   // ------------------------------------------------------------------------
   // 5. CUSTOM RETICLE CURSOR
   // ------------------------------------------------------------------------
@@ -245,6 +290,70 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // Cursor-Reactive Spotlight & Magnetic Hover (desktop / non-touch)
+  if (!isTouchDevice) {
+    const spotlightCards = document.querySelectorAll('.project-card, .arcade-cabinet, .save-card');
+    spotlightCards.forEach((card) => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        card.style.setProperty('--mx', `${x}px`);
+        card.style.setProperty('--my', `${y}px`);
+      }, { passive: true });
+    });
+
+    const magneticEls = document.querySelectorAll('.btn-primary, .btn-secondary, .quest-node');
+    magneticEls.forEach((el) => {
+      el.addEventListener('mousemove', (e) => {
+        if (prefersReducedMotion) return;
+        const rect = el.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const distX = (e.clientX - centerX) * 0.25;
+        const distY = (e.clientY - centerY) * 0.25;
+        const clampedX = Math.max(-6, Math.min(6, distX));
+        const clampedY = Math.max(-6, Math.min(6, distY));
+        el.style.setProperty('--magnet-x', `${clampedX}px`);
+        el.style.setProperty('--magnet-y', `${clampedY}px`);
+      }, { passive: true });
+
+      el.addEventListener('mouseleave', () => {
+        el.style.setProperty('--magnet-x', '0px');
+        el.style.setProperty('--magnet-y', '0px');
+      });
+    });
+  }
+
+  // Click Spark Burst on Interactive Primary Elements
+  const sparkTargets = document.querySelectorAll('.btn-primary, .btn-secondary, .quest-node');
+  const sparkColors = ['#5ef5ff', '#b46bff', '#ffb454', '#4ee6a4'];
+  sparkTargets.forEach((el) => {
+    el.addEventListener('click', (e) => {
+      if (prefersReducedMotion) return;
+      const x = e.clientX;
+      const y = e.clientY;
+      if (!x && !y) return;
+      for (let i = 0; i < 6; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'click-spark-particle';
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
+        particle.style.backgroundColor = sparkColors[i % sparkColors.length];
+
+        const angle = (i / 6) * Math.PI * 2 + (Math.random() * 0.4 - 0.2);
+        const dist = 18 + Math.random() * 22;
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist;
+
+        particle.style.setProperty('--dx', `${dx}px`);
+        particle.style.setProperty('--dy', `${dy}px`);
+
+        document.body.appendChild(particle);
+        setTimeout(() => particle.remove(), 500);
+      }
+    });
+  });
   // ------------------------------------------------------------------------
   // 6. KONAMI CODE EASTER EGG
   // ------------------------------------------------------------------------
@@ -351,11 +460,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  function updateModalBlur() {
+    const pongModalEl = document.getElementById('pong-modal');
+    const rpgModalEl = document.getElementById('rpg-modal');
+    const mobileMenuEl = document.getElementById('mobile-menu');
+    const isAnyOpen = (pongModalEl && pongModalEl.classList.contains('open')) ||
+                      (rpgModalEl && rpgModalEl.classList.contains('open')) ||
+                      (mobileMenuEl && mobileMenuEl.classList.contains('open'));
+    document.body.classList.toggle('modal-open', isAnyOpen);
+  }
+
   function openModal(modal, opener) {
     lastFocusedEl = opener || document.activeElement;
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
+    updateModalBlur();
     const focusable = getFocusable(modal);
     (focusable[0] || modal).focus();
     modal._tabHandler = (e) => trapTabKey(modal, e);
@@ -366,6 +486,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    updateModalBlur();
     if (modal._tabHandler) {
       modal.removeEventListener('keydown', modal._tabHandler);
       modal._tabHandler = null;
@@ -461,6 +582,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       mobileMenu.classList.toggle('open', !isOpen);
       mobileMenu.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
       hamburgerBtn.setAttribute('aria-expanded', !isOpen);
+      updateModalBlur();
     });
 
     mobileLinks.forEach((link) => {
@@ -468,9 +590,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         mobileMenu.classList.remove('open');
         mobileMenu.setAttribute('aria-hidden', 'true');
         hamburgerBtn.setAttribute('aria-expanded', 'false');
+        updateModalBlur();
       });
     });
   }
+
+  // Force-close the mobile menu (and clear its blur) if the viewport widens
+  // past the desktop breakpoint while it's open (rotation/resize/devtools) —
+  // the hamburger button that would otherwise close it is hidden there.
+  window.addEventListener('resize', () => {
+    if (mobileMenu && mobileMenu.classList.contains('open') && window.innerWidth > 900) {
+      mobileMenu.classList.remove('open');
+      mobileMenu.setAttribute('aria-hidden', 'true');
+      if (hamburgerBtn) hamburgerBtn.setAttribute('aria-expanded', 'false');
+      updateModalBlur();
+    }
+  });
 
   // ------------------------------------------------------------------------
   // 10. CONTACT FORM MAILTO HANDLING

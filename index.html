@@ -23,14 +23,43 @@
   }
   </script>
 
+  <!-- Inline script to gate boot sequence before first paint -->
+  <script>
+    (function() {
+      try {
+        var bootSeen = sessionStorage.getItem('bootSeen');
+        var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (bootSeen || reducedMotion) {
+          document.documentElement.classList.add('skip-boot');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
   <!-- CSS -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+  <!-- Ambient Aurora Background Mesh -->
+  <div id="aurora-bg" aria-hidden="true">
+    <div class="aurora-blob aurora-blob-1"></div>
+    <div class="aurora-blob aurora-blob-2"></div>
+    <div class="aurora-blob aurora-blob-3"></div>
+  </div>
+
+  <!-- PRESS START BOOT OVERLAY -->
+  <div id="boot-overlay" class="boot-overlay" aria-hidden="true">
+    <div class="boot-content">
+      <div class="boot-line boot-line-1">// INITIALIZING MALAY.EXE</div>
+      <div class="boot-line boot-line-2">FULL-STACK SYSTEMS ARCHITECT v2.0</div>
+      <div class="boot-line boot-line-3">▶ PRESS START ◀</div>
+      <div class="boot-hint">[CLICK OR PRESS ANY KEY TO SKIP]</div>
+    </div>
+  </div>
+
   <!-- Custom Cursor Reticle -->
   <div id="custom-cursor" aria-hidden="true"></div>
-
   <!-- FIXED GAME HUD BAR -->
   <header id="hud" role="banner">
     <div class="hud-left">

@@ -475,34 +475,70 @@
       <div class="contact-layout">
         <!-- Save Point Cards -->
         <div class="contact-cards">
-          <a href="mailto:malayrc276@gmail.com" class="save-card">
-            <div class="card-icon">✉️</div>
-            <div class="card-info">
-              <h4>EMAIL</h4>
-              <p>malayrc276@gmail.com</p>
-            </div>
-          </a>
+          <div class="save-card">
+            <a href="mailto:malayrc276@gmail.com" class="save-card-link">
+              <div class="card-icon">✉️</div>
+              <div class="card-info">
+                <div class="card-header-row">
+                  <h4>EMAIL</h4>
+                  <span class="rank-badge rank-s">S-RANK · DIRECT COMMS</span>
+                </div>
+                <p>malayrc276@gmail.com</p>
+              </div>
+            </a>
+            <button type="button" class="card-copy-btn" data-copy="malayrc276@gmail.com" aria-label="Copy Email Address">
+              [COPY]
+            </button>
+          </div>
 
-          <a href="https://github.com/malllayyyy" target="_blank" rel="noopener" class="save-card">
-            <div class="card-icon">💻</div>
-            <div class="card-info">
-              <h4>GITHUB</h4>
-              <p>github.com/malllayyyy</p>
-            </div>
-          </a>
+          <div class="save-card">
+            <a href="https://github.com/malllayyyy" target="_blank" rel="noopener" class="save-card-link">
+              <div class="card-icon">💻</div>
+              <div class="card-info">
+                <div class="card-header-row">
+                  <h4>GITHUB</h4>
+                  <span class="rank-badge rank-a">A-RANK · CODE ARCHIVES</span>
+                </div>
+                <p>github.com/malllayyyy</p>
+              </div>
+            </a>
+            <button type="button" class="card-copy-btn" data-copy="https://github.com/malllayyyy" aria-label="Copy GitHub URL">
+              [COPY]
+            </button>
+          </div>
 
           <!-- TODO: add real LinkedIn URL -->
-          <a href="#" data-missing="true" class="save-card missing">
-            <div class="card-icon">💼</div>
-            <div class="card-info">
-              <h4>LINKEDIN</h4>
-              <p>LinkedIn (Coming Soon)</p>
-            </div>
-          </a>
+          <div class="save-card missing">
+            <a href="#" data-missing="true" class="save-card-link">
+              <div class="card-icon">💼</div>
+              <div class="card-info">
+                <div class="card-header-row">
+                  <h4>LINKEDIN</h4>
+                  <span class="rank-badge rank-locked">LOCKED · COMING SOON</span>
+                </div>
+                <p>LinkedIn (Coming Soon)</p>
+              </div>
+            </a>
+          </div>
         </div>
 
         <!-- Message Form -->
         <form id="quest-form" class="contact-form">
+          <div class="form-group quest-archetypes-group">
+            <label id="archetype-label">QUEST ARCHETYPE (QUICK-SELECT)</label>
+            <div class="quest-pills">
+              <button type="button" class="quest-pill" data-archetype="Full-Time Role" data-template="Hi Malay, I'd like to talk about a full-time role..." aria-pressed="false">
+                Full-Time Role
+              </button>
+              <button type="button" class="quest-pill" data-archetype="Freelance / Contract" data-template="Hi Malay, I have a freelance/contract project..." aria-pressed="false">
+                Freelance / Contract
+              </button>
+              <button type="button" class="quest-pill" data-archetype="General Inquiry" data-template="Hi Malay, I wanted to reach out about..." aria-pressed="false">
+                General Inquiry
+              </button>
+            </div>
+          </div>
+
           <div class="form-group">
             <label for="form-name">PLAYER NAME</label>
             <input type="text" id="form-name" required placeholder="Your Name">
@@ -518,7 +554,7 @@
             <textarea id="form-message" rows="4" required placeholder="Write your message here..."></textarea>
           </div>
 
-          <button type="submit" class="btn btn-primary">📜 SEND QUEST</button>
+          <button type="submit" class="btn btn-primary" id="quest-submit-btn">📜 SEND QUEST</button>
         </form>
       </div>
     </section>

@@ -45,7 +45,7 @@ export function initRpg(canvas, onUnlockSkill) {
       width: 24,
       height: 24,
       color: '#00f5a0',
-      text: 'Self-built PaaS — 6/6 phases shipped, 13/13 tests passing. Push a repo, it goes live.'
+      text: "I built my own Vercel. 6/6 phases shipped, 13/13 tests passing, zero auth libraries used. Push a repo — I'll handle the rest."
     },
     {
       id: 2,
@@ -55,7 +55,7 @@ export function initRpg(canvas, onUnlockSkill) {
       width: 24,
       height: 24,
       color: '#00f5a0',
-      text: 'Migrated 37 legacy MySQL tables to MongoDB with zero downtime to the live site.'
+      text: 'Migrated 37 legacy MySQL tables to MongoDB while students were taking live courses — zero downtime, zero dropped data.'
     },
     {
       id: 3,
@@ -65,7 +65,7 @@ export function initRpg(canvas, onUnlockSkill) {
       width: 24,
       height: 24,
       color: '#ff9e00',
-      text: 'Gaming-lounge billing engine, shipped as a real installable Android app.'
+      text: 'Halt, traveler! My Android artifact tracks every gaming station and calculates session gold down to the minute. No free playtime!'
     }
   ];
 
@@ -143,6 +143,27 @@ export function initRpg(canvas, onUnlockSkill) {
       rect1.y + rect1.height > rect2.y
     );
   }
+  function wrapText(text, maxWidth) {
+    const words = text.split(' ');
+    const lines = [];
+    let currentLine = '';
+
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+      const testLine = currentLine ? currentLine + ' ' + word : word;
+      if (ctx.measureText(testLine).width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+    return lines;
+  }
+
 
   function checkNPCInteraction() {
     if (activeNearNpcId === null) return;
@@ -338,24 +359,44 @@ export function initRpg(canvas, onUnlockSkill) {
 
     // Dialogue Box Overlay
     if (currentDialogue) {
+      ctx.font = '12px "Space Grotesk", sans-serif';
+      const paddingX = 15;
+      const boxX = 30;
+      const boxWidth = WIDTH - 60;
+      const maxTextWidth = boxWidth - (paddingX * 2);
+      const lines = wrapText(currentDialogue.text, maxTextWidth);
+
+      const titleHeight = 16;
+      const lineHeight = 18;
+      const footerHeight = 16;
+      const verticalPadding = 12;
+
+      const boxHeight = Math.max(75, verticalPadding + titleHeight + (lines.length * lineHeight) + footerHeight + verticalPadding);
+      const boxY = HEIGHT - boxHeight - 15;
+
       ctx.fillStyle = 'rgba(13, 17, 23, 0.95)';
       ctx.strokeStyle = '#00f5a0';
       ctx.lineWidth = 2;
-      ctx.fillRect(30, HEIGHT - 95, WIDTH - 60, 75);
-      ctx.strokeRect(30, HEIGHT - 95, WIDTH - 60, 75);
+      ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+      ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
 
       ctx.fillStyle = '#ff9e00';
       ctx.font = '10px "Press Start 2P", monospace';
       ctx.textAlign = 'left';
-      ctx.fillText(`💬 ${currentDialogue.name}:`, 45, HEIGHT - 73);
+      ctx.fillText(`💬 ${currentDialogue.name}:`, boxX + paddingX, boxY + verticalPadding + 10);
 
       ctx.fillStyle = '#e7eaf0';
       ctx.font = '12px "Space Grotesk", sans-serif';
-      ctx.fillText(currentDialogue.text, 45, HEIGHT - 48);
+      let lineY = boxY + verticalPadding + titleHeight + 12;
+      lines.forEach((line) => {
+        ctx.fillText(line, boxX + paddingX, lineY);
+        lineY += lineHeight;
+      });
 
       ctx.fillStyle = '#8a93a6';
       ctx.font = '10px "Space Grotesk", sans-serif';
-      ctx.fillText('[Press E or Walk Away]', WIDTH - 200, HEIGHT - 28);
+      ctx.textAlign = 'right';
+      ctx.fillText('[Press E or Walk Away]', boxX + boxWidth - paddingX, boxY + boxHeight - 10);
     }
   }
 

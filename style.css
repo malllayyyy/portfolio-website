@@ -1433,9 +1433,18 @@ canvas.game-canvas {
   display: flex;
   align-items: center;
   gap: 1rem;
-  text-decoration: none;
   color: var(--text-primary);
   transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.save-card-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
 }
 
 .save-card:hover {
@@ -1457,11 +1466,85 @@ canvas.game-canvas {
   font-size: 1.8rem;
 }
 
+.card-info {
+  flex: 1;
+}
+
+.card-header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.25rem;
+}
+
 .card-info h4 {
   font-family: var(--font-pixel);
   font-size: 0.75rem;
   color: var(--accent-prime);
-  margin-bottom: 0.25rem;
+}
+
+.rank-badge {
+  font-family: var(--font-pixel);
+  font-size: 0.5rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.rank-badge.rank-s {
+  background: rgba(0, 245, 160, 0.12);
+  color: var(--accent-prime);
+  border: 1px solid var(--accent-prime);
+  box-shadow: 0 0 8px rgba(0, 245, 160, 0.15);
+}
+
+.rank-badge.rank-a {
+  background: rgba(255, 158, 0, 0.12);
+  color: var(--accent-critical);
+  border: 1px solid var(--accent-critical);
+  box-shadow: 0 0 8px rgba(255, 158, 0, 0.15);
+}
+
+.rank-badge.rank-locked {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  opacity: 0.7;
+}
+
+.card-copy-btn {
+  background: rgba(0, 245, 160, 0.08);
+  border: 1px solid var(--border-prime-subtle);
+  color: var(--accent-prime);
+  font-family: var(--font-pixel);
+  font-size: 0.55rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  margin-left: auto;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 5;
+}
+
+.card-copy-btn:hover,
+.card-copy-btn:focus-visible {
+  background: var(--accent-prime);
+  color: var(--bg-void);
+  box-shadow: 0 0 12px rgba(0, 245, 160, 0.4);
+  outline: none;
+}
+
+.card-copy-btn.copied {
+  background: var(--accent-prime);
+  color: var(--bg-void);
+  border-color: var(--accent-prime);
+  box-shadow: 0 0 15px rgba(0, 245, 160, 0.5);
 }
 
 .card-info p {
@@ -1510,6 +1593,73 @@ canvas.game-canvas {
 .form-group textarea:focus {
   outline: none;
   border-color: var(--accent-prime);
+}
+
+.quest-archetypes-group {
+  margin-bottom: 0.25rem;
+}
+
+.quest-pills {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+.quest-pill {
+  background: var(--bg-void);
+  border: 1px solid var(--border-panel);
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.4rem 0.85rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quest-pill:hover,
+.quest-pill:focus-visible {
+  border-color: var(--accent-prime);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.quest-pill.active,
+.quest-pill[aria-pressed="true"] {
+  background: rgba(0, 245, 160, 0.15);
+  border-color: var(--accent-prime);
+  color: var(--accent-prime);
+  box-shadow: 0 0 10px rgba(0, 245, 160, 0.2);
+  font-weight: 600;
+}
+
+@keyframes questAcceptedFlash {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(0, 245, 160, 0);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(0, 245, 160, 0.9), 0 0 50px rgba(0, 245, 160, 0.5);
+    background: #40ffb8;
+    color: var(--bg-void);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(0, 245, 160, 0);
+  }
+}
+
+.btn-quest-accepted {
+  animation: questAcceptedFlash 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-quest-accepted {
+    animation: none;
+  }
 }
 
 /* ==========================================================================

@@ -618,7 +618,82 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // ------------------------------------------------------------------------
-  // 10. CONTACT FORM MAILTO HANDLING
+  // 10. COPY-TO-CLIPBOARD FOR CONTACT CARDS
+  // ------------------------------------------------------------------------
+  const copyButtons = document.querySelectorAll('.card-copy-btn');
+  copyButtons.forEach((btn) => {
+    const originalLabel = btn.textContent;
+    let restoreTimer = null;
+
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const textToCopy = btn.getAttribute('data-copy');
+      if (!textToCopy) return;
+
+      if (!navigator.clipboard || !navigator.clipboard.writeText) {
+        showToast('COPY UNAVAILABLE', 'Clipboard access needs HTTPS — copy the text manually.');
+        return;
+      }
+
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        clearTimeout(restoreTimer);
+        btn.textContent = '[COPIED!]';
+        btn.classList.add('copied');
+        showToast('COPIED TO CLIPBOARD', textToCopy);
+
+        restoreTimer = setTimeout(() => {
+          btn.textContent = originalLabel;
+          btn.classList.remove('copied');
+        }, 1500);
+      }).catch((err) => {
+        console.error('Clipboard write failed:', err);
+      });
+    });
+  });
+
+  // ------------------------------------------------------------------------
+  // 11. QUEST ARCHETYPE QUICK-SELECT PILLS
+  // ------------------------------------------------------------------------
+  const questPills = document.querySelectorAll('.quest-pill');
+  let selectedCategory = '';
+  let lastAppliedTemplate = '';
+
+  questPills.forEach((pill) => {
+    pill.addEventListener('click', () => {
+      const isAlreadyActive = pill.getAttribute('aria-pressed') === 'true';
+
+      questPills.forEach((p) => {
+        p.setAttribute('aria-pressed', 'false');
+        p.classList.remove('active');
+      });
+
+      if (!isAlreadyActive) {
+        pill.setAttribute('aria-pressed', 'true');
+        pill.classList.add('active');
+        selectedCategory = pill.getAttribute('data-archetype') || '';
+
+        const template = pill.getAttribute('data-template');
+        const messageInput = document.getElementById('form-message');
+        // Only overwrite the textarea if it's empty or still holds a
+        // template we applied earlier — never discard text the visitor
+        // actually typed themselves.
+        if (messageInput && template) {
+          const current = messageInput.value;
+          if (current === '' || current === lastAppliedTemplate) {
+            messageInput.value = template;
+            lastAppliedTemplate = template;
+          }
+          messageInput.focus();
+        }
+      } else {
+        selectedCategory = '';
+      }
+    });
+  });
+
+  // ------------------------------------------------------------------------
+  // 12. CONTACT FORM MAILTO HANDLING & SUBMIT FEEDBACK
   // ------------------------------------------------------------------------
   const questForm = document.getElementById('quest-form');
   if (questForm) {
@@ -629,12 +704,32 @@ document.addEventListener('DOMContentLoaded', async () => {
       const email = document.getElementById('form-email').value;
       const message = document.getElementById('form-message').value;
 
-      const subject = encodeURIComponent(`Portfolio Quest Message from ${name}`);
+      const subjectPrefix = selectedCategory ? `[${selectedCategory}] ` : '';
+      const subject = encodeURIComponent(`${subjectPrefix}Portfolio Quest Message from ${name}`);
       const body = encodeURIComponent(`Player Name: ${name}\nPlayer Email: ${email}\n\nMessage:\n${message}`);
 
       window.location.href = `mailto:malayrc276@gmail.com?subject=${subject}&body=${body}`;
-      showToast('QUEST SENT', 'Email client opened with your message!');
+
+      // Submit feedback animation
+      const submitBtn = document.getElementById('quest-submit-btn') || questForm.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.classList.remove('btn-quest-accepted');
+        void submitBtn.offsetWidth;
+        submitBtn.classList.add('btn-quest-accepted');
+        setTimeout(() => {
+          submitBtn.classList.remove('btn-quest-accepted');
+        }, 600);
+      }
+
+      showToast('QUEST ACCEPTED', 'Message dispatched — check your email client.');
+
       questForm.reset();
+      selectedCategory = '';
+      lastAppliedTemplate = '';
+      questPills.forEach((p) => {
+        p.setAttribute('aria-pressed', 'false');
+        p.classList.remove('active');
+      });
     });
   }
 });

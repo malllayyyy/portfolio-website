@@ -91,8 +91,8 @@
       <nav aria-label="Main Navigation">
         <ul id="hud-nav">
           <li><a href="#home">Home</a></li>
-          <li><a href="#stats">Stats</a></li>
           <li><a href="#levels">Levels</a></li>
+          <li><a href="#stats">Stats</a></li>
           <li><a href="#arcade">Arcade</a></li>
           <li><a href="#contact">Quest Board</a></li>
         </ul>
@@ -107,17 +107,17 @@
   <!-- MOBILE MENU OVERLAY -->
   <div id="mobile-menu" class="mobile-menu-overlay" aria-hidden="true">
     <a href="#home" class="mobile-link">HOME</a>
-    <a href="#stats" class="mobile-link">STATS</a>
     <a href="#levels" class="mobile-link">LEVELS</a>
+    <a href="#stats" class="mobile-link">STATS</a>
     <a href="#arcade" class="mobile-link">ARCADE</a>
     <a href="#contact" class="mobile-link">QUEST BOARD</a>
   </div>
 
+  <canvas id="hero-canvas" aria-hidden="true"></canvas>
+
   <main>
     <!-- SECTION 1: HERO / TITLE SCREEN -->
     <section id="home" aria-label="Hero Title Screen">
-      <canvas id="hero-canvas" aria-hidden="true"></canvas>
-
       <div class="hero-content">
         <div class="hero-eyebrow">// FULL-STACK DEVELOPER · SYSTEMS BUILDER · GAME TINKERER</div>
         <h1 class="pixel-title flicker-text">MALAY</h1>
@@ -134,7 +134,147 @@
       <div class="scroll-hint" aria-hidden="true">▼ scroll</div>
     </section>
 
-    <!-- SECTION 2: STATS / ABOUT -->
+    <!-- SECTION 2: LEVELS / PROJECTS -->
+    <section id="levels" aria-labelledby="levels-heading" class="reveal">
+      <h2 id="levels-heading" class="pixel-heading">SELECT YOUR LEVEL</h2>
+      <p class="section-subtitle">Mission Log & Featured Work</p>
+
+      <div class="projects-grid">
+        <!-- Card 1: Deployment Platform -->
+        <article class="project-card" id="project-deploy">
+          <div>
+            <div class="card-top">
+              <div class="stars" aria-label="Difficulty 5 out of 5 stars">★★★★★</div>
+              <span class="status-badge boss">BOSS LEVEL</span>
+            </div>
+            <h3 class="project-title">Deployment Platform</h3>
+            <p class="project-tagline">
+              A self-built Vercel/Render-style PaaS — push a repo to deploy static frontends or persistent backend services directly to a subdomain.
+            </p>
+            <div class="tech-chips">
+              <span class="chip">Node.js</span>
+              <span class="chip">Express</span>
+              <span class="chip">Docker</span>
+              <span class="chip">BullMQ</span>
+              <span class="chip">Redis</span>
+              <span class="chip">PostgreSQL</span>
+              <span class="chip">MinIO</span>
+              <span class="chip">React</span>
+              <span class="chip">Vite</span>
+              <span class="chip">Three.js</span>
+              <span class="chip">GSAP</span>
+              <span class="chip">Socket.IO</span>
+            </div>
+          </div>
+
+          <div>
+            <button class="accordion-btn" aria-expanded="false" aria-controls="log-1">
+              <span>▸ VIEW MISSION LOG</span>
+              <span class="acc-icon">▼</span>
+            </button>
+            <div id="log-1" class="accordion-content">
+              <ul class="mission-bullets">
+                <li>Full pipeline: clone → isolated Docker build → upload to MinIO → live subdomain via a custom reverse proxy, versioned deployments with one-click rollback</li>
+                <li>Long-lived backend hosting: runs service repositories as persistent Docker containers with native restart supervision, dynamically reverse-proxied to subdomains via node:http.</li>
+                <li>Real-time build logs streamed over Socket.IO into a React dashboard with a Three.js hero and GSAP-animated transitions</li>
+                <li>JWT-free custom session auth (stdlib scrypt hashing + HMAC-signed cookies, no auth library), per-user project ownership enforcement</li>
+                <li>Lockfile-hashed build caching (node_modules reuse across builds) and per-project build-time environment variables injected safely via Docker argv (never shell-interpolated)</li>
+                <li>All 6 build phases shipped and verified end-to-end; 13/13 automated tests passing</li>
+              </ul>
+              <div class="project-links">
+                <span class="no-link-note">Local build — repo private for now</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 2: ProAcademys -->
+        <article class="project-card" id="project-proacademys">
+          <div>
+            <div class="card-top">
+              <div class="stars" aria-label="Difficulty 4 out of 5 stars">★★★★☆</div>
+              <span class="status-badge live">LIVE</span>
+            </div>
+            <h3 class="project-title">ProAcademys</h3>
+            <p class="project-tagline">
+              Full ground-up rewrite of a live e-learning platform — legacy PHP to a modern MERN stack, with zero downtime to the original site.
+            </p>
+            <div class="tech-chips">
+              <span class="chip">React</span>
+              <span class="chip">Vite</span>
+              <span class="chip">Tailwind CSS</span>
+              <span class="chip">Node.js</span>
+              <span class="chip">Express</span>
+              <span class="chip">MongoDB Atlas</span>
+              <span class="chip">JWT</span>
+              <span class="chip">Google OAuth</span>
+              <span class="chip">Razorpay</span>
+            </div>
+          </div>
+
+          <div>
+            <button class="accordion-btn" aria-expanded="false" aria-controls="log-2">
+              <span>▸ VIEW MISSION LOG</span>
+              <span class="acc-icon">▼</span>
+            </button>
+            <div id="log-2" class="accordion-content">
+              <ul class="mission-bullets">
+                <li>Rebuilt a production Laravel/PHP e-learning site as MERN — layered backend (routes → controllers → services → repositories) to eliminate bugs that plagued the original (duplicated payment logic, conflicting routes)</li>
+                <li>Migrated the full legacy MySQL database (37 tables) into MongoDB with versioned, re-runnable migration scripts and row-count parity reports</li>
+                <li>Built the whole product surface: course catalog, quizzes with scored results, certificates, Razorpay payments with coupons, and a full admin panel (courses, enrollments, users, live classes, blog, support)</li>
+                <li>Solved a gnarly cross-site cookie auth bug (Vercel frontend + Render backend) with a same-origin API proxy rewrite instead of just cookie flags</li>
+              </ul>
+              <div class="project-links">
+                <a href="https://proacademys-client.vercel.app/" target="_blank" rel="noopener">🌐 Live Demo ↗</a>
+                <a href="https://github.com/malllayyyy/proacademys-client" target="_blank" rel="noopener">💻 Frontend Repo ↗</a>
+                <a href="https://github.com/malllayyyy/proacademys-server" target="_blank" rel="noopener">⚙️ Backend Repo ↗</a>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 3: GameZone -->
+        <article class="project-card" id="project-gamezone">
+          <div>
+            <div class="card-top">
+              <div class="stars" aria-label="Difficulty 3 out of 5 stars">★★★☆☆</div>
+              <span class="status-badge complete">COMPLETE</span>
+            </div>
+            <h3 class="project-title">GameZone</h3>
+            <p class="project-tagline">
+              A gaming-lounge management system — station/session tracking and time-based billing, packaged as a native Android app.
+            </p>
+            <div class="tech-chips">
+              <span class="chip">React</span>
+              <span class="chip">Vite</span>
+              <span class="chip">Tailwind CSS</span>
+              <span class="chip">Express</span>
+              <span class="chip">SQLite</span>
+              <span class="chip">Capacitor (Android)</span>
+            </div>
+          </div>
+
+          <div>
+            <button class="accordion-btn" aria-expanded="false" aria-controls="log-3">
+              <span>▸ VIEW MISSION LOG</span>
+              <span class="acc-icon">▼</span>
+            </button>
+            <div id="log-3" class="accordion-content">
+              <ul class="mission-bullets">
+                <li>Tracks gaming stations and live sessions (active/paused), with a pricing engine that bills by duration, hourly rate, and per-activity minimum charge</li>
+                <li>Single Express + SQLite backend serving both the REST API and the built React frontend as static files</li>
+                <li>Shipped as an installable native Android app via Capacitor, not just a web page</li>
+              </ul>
+              <div class="project-links">
+                <span class="no-link-note">Local build — Android APK build</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- SECTION 3: STATS / ABOUT -->
     <section id="stats" aria-labelledby="stats-heading" class="reveal">
       <h2 id="stats-heading" class="pixel-heading">CHARACTER STATS</h2>
       <p class="section-subtitle">Level 1 Full-Stack Systems Architect & Game Tinkerer</p>
@@ -297,145 +437,6 @@
             <span class="quest-node-sub">Self-built PaaS, boss level</span>
           </button>
         </div>
-      </div>
-    </section>
-
-    <!-- SECTION 3: LEVELS / PROJECTS -->
-    <section id="levels" aria-labelledby="levels-heading" class="reveal">
-      <h2 id="levels-heading" class="pixel-heading">SELECT YOUR LEVEL</h2>
-      <p class="section-subtitle">Mission Log & Featured Work</p>
-
-      <div class="projects-grid">
-        <!-- Card 1: Deployment Platform -->
-        <article class="project-card" id="project-deploy">
-          <div>
-            <div class="card-top">
-              <div class="stars" aria-label="Difficulty 5 out of 5 stars">★★★★★</div>
-              <span class="status-badge boss">BOSS LEVEL</span>
-            </div>
-            <h3 class="project-title">Deployment Platform</h3>
-            <p class="project-tagline">
-              A self-built Vercel/Netlify-style PaaS — push a repo, it builds in an isolated container and goes live on a subdomain.
-            </p>
-            <div class="tech-chips">
-              <span class="chip">Node.js</span>
-              <span class="chip">Express</span>
-              <span class="chip">Docker</span>
-              <span class="chip">BullMQ</span>
-              <span class="chip">Redis</span>
-              <span class="chip">PostgreSQL</span>
-              <span class="chip">MinIO</span>
-              <span class="chip">React</span>
-              <span class="chip">Vite</span>
-              <span class="chip">Three.js</span>
-              <span class="chip">GSAP</span>
-              <span class="chip">Socket.IO</span>
-            </div>
-          </div>
-
-          <div>
-            <button class="accordion-btn" aria-expanded="false" aria-controls="log-1">
-              <span>▸ VIEW MISSION LOG</span>
-              <span class="acc-icon">▼</span>
-            </button>
-            <div id="log-1" class="accordion-content">
-              <ul class="mission-bullets">
-                <li>Full pipeline: clone → isolated Docker build → upload to MinIO → live subdomain via a custom reverse proxy, versioned deployments with one-click rollback</li>
-                <li>Real-time build logs streamed over Socket.IO into a React dashboard with a Three.js hero and GSAP-animated transitions</li>
-                <li>JWT-free custom session auth (stdlib scrypt hashing + HMAC-signed cookies, no auth library), per-user project ownership enforcement</li>
-                <li>Lockfile-hashed build caching (node_modules reuse across builds) and per-project build-time environment variables injected safely via Docker argv (never shell-interpolated)</li>
-                <li>All 6 build phases shipped and verified end-to-end; 13/13 automated tests passing</li>
-              </ul>
-              <div class="project-links">
-                <span class="no-link-note">Local build — repo private for now</span>
-              </div>
-            </div>
-          </div>
-        </article>
-
-        <!-- Card 2: ProAcademys -->
-        <article class="project-card" id="project-proacademys">
-          <div>
-            <div class="card-top">
-              <div class="stars" aria-label="Difficulty 4 out of 5 stars">★★★★☆</div>
-              <span class="status-badge live">LIVE</span>
-            </div>
-            <h3 class="project-title">ProAcademys</h3>
-            <p class="project-tagline">
-              Full ground-up rewrite of a live e-learning platform — legacy PHP to a modern MERN stack, with zero downtime to the original site.
-            </p>
-            <div class="tech-chips">
-              <span class="chip">React</span>
-              <span class="chip">Vite</span>
-              <span class="chip">Tailwind CSS</span>
-              <span class="chip">Node.js</span>
-              <span class="chip">Express</span>
-              <span class="chip">MongoDB Atlas</span>
-              <span class="chip">JWT</span>
-              <span class="chip">Google OAuth</span>
-              <span class="chip">Razorpay</span>
-            </div>
-          </div>
-
-          <div>
-            <button class="accordion-btn" aria-expanded="false" aria-controls="log-2">
-              <span>▸ VIEW MISSION LOG</span>
-              <span class="acc-icon">▼</span>
-            </button>
-            <div id="log-2" class="accordion-content">
-              <ul class="mission-bullets">
-                <li>Rebuilt a production Laravel/PHP e-learning site as MERN — layered backend (routes → controllers → services → repositories) to eliminate bugs that plagued the original (duplicated payment logic, conflicting routes)</li>
-                <li>Migrated the full legacy MySQL database (37 tables) into MongoDB with versioned, re-runnable migration scripts and row-count parity reports</li>
-                <li>Built the whole product surface: course catalog, quizzes with scored results, certificates, Razorpay payments with coupons, and a full admin panel (courses, enrollments, users, live classes, blog, support)</li>
-                <li>Solved a gnarly cross-site cookie auth bug (Vercel frontend + Render backend) with a same-origin API proxy rewrite instead of just cookie flags</li>
-              </ul>
-              <div class="project-links">
-                <a href="https://proacademys-client.vercel.app/" target="_blank" rel="noopener">🌐 Live Demo ↗</a>
-                <a href="https://github.com/malllayyyy/proacademys-client" target="_blank" rel="noopener">💻 Frontend Repo ↗</a>
-                <a href="https://github.com/malllayyyy/proacademys-server" target="_blank" rel="noopener">⚙️ Backend Repo ↗</a>
-              </div>
-            </div>
-          </div>
-        </article>
-
-        <!-- Card 3: GameZone -->
-        <article class="project-card" id="project-gamezone">
-          <div>
-            <div class="card-top">
-              <div class="stars" aria-label="Difficulty 3 out of 5 stars">★★★☆☆</div>
-              <span class="status-badge complete">COMPLETE</span>
-            </div>
-            <h3 class="project-title">GameZone</h3>
-            <p class="project-tagline">
-              A gaming-lounge management system — station/session tracking and time-based billing, packaged as a native Android app.
-            </p>
-            <div class="tech-chips">
-              <span class="chip">React</span>
-              <span class="chip">Vite</span>
-              <span class="chip">Tailwind CSS</span>
-              <span class="chip">Express</span>
-              <span class="chip">SQLite</span>
-              <span class="chip">Capacitor (Android)</span>
-            </div>
-          </div>
-
-          <div>
-            <button class="accordion-btn" aria-expanded="false" aria-controls="log-3">
-              <span>▸ VIEW MISSION LOG</span>
-              <span class="acc-icon">▼</span>
-            </button>
-            <div id="log-3" class="accordion-content">
-              <ul class="mission-bullets">
-                <li>Tracks gaming stations and live sessions (active/paused), with a pricing engine that bills by duration, hourly rate, and per-activity minimum charge</li>
-                <li>Single Express + SQLite backend serving both the REST API and the built React frontend as static files</li>
-                <li>Shipped as an installable native Android app via Capacitor, not just a web page</li>
-              </ul>
-              <div class="project-links">
-                <span class="no-link-note">Local build — Android APK build</span>
-              </div>
-            </div>
-          </div>
-        </article>
       </div>
     </section>
 

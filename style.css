@@ -1324,7 +1324,7 @@ section {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
   padding: 1rem;
   overflow-y: auto;
 }
@@ -1333,6 +1333,7 @@ section {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
+  transition: opacity 0.3s ease, visibility 0s linear 0s;
 }
 
 .arcade-frame {
@@ -2107,13 +2108,14 @@ footer a {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.2s ease, visibility 0.2s ease;
+  transition: opacity 0.2s ease, visibility 0s linear 0.2s;
 }
 
 .console-overlay.open {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
+  transition: opacity 0.2s ease, visibility 0s linear 0s;
 }
 
 @media (prefers-reduced-motion: reduce) {

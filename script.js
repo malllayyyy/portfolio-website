@@ -500,8 +500,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
     updateModalBlur();
-    const focusable = getFocusable(modal);
-    (focusable[0] || modal).focus();
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const focusable = getFocusable(modal);
+        (focusable[0] || modal).focus();
+      });
+    });
     modal._tabHandler = (e) => trapTabKey(modal, e);
     modal.addEventListener('keydown', modal._tabHandler);
   }
@@ -515,8 +519,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       modal.removeEventListener('keydown', modal._tabHandler);
       modal._tabHandler = null;
     }
-    if (lastFocusedEl) {
-      lastFocusedEl.focus();
+    if (lastFocusedEl && typeof lastFocusedEl.focus === 'function') {
+      try {
+        if (document.body.contains(lastFocusedEl)) {
+          lastFocusedEl.focus();
+        }
+      } catch (e) {
+        // Fallback safely if restore target cannot receive focus
+      }
       lastFocusedEl = null;
     }
   }
@@ -779,6 +789,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     },
     openRpg: () => {
       if (openRpgBtn) openRpgBtn.click();
+    },
+    openAchievements: () => {
+      const achBtn = document.getElementById('achievements-btn');
+      if (achBtn) achBtn.click();
     },
     triggerReboot: () => {
       try {

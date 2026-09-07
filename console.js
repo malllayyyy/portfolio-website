@@ -13,6 +13,7 @@ export function initConsole(deps = {}) {
     toggleTheme = () => 'green',
     openPong = () => {},
     openRpg = () => {},
+    openAchievements = () => {},
     triggerReboot = () => {},
     scrollSection = () => {},
     copyText = () => {}
@@ -77,6 +78,7 @@ export function initConsole(deps = {}) {
       label: 'Launch Pong',
       desc: 'Play classic arcade Pong',
       cat: 'PLAY',
+      transfersFocus: true,
       action: () => openPong()
     },
     {
@@ -84,7 +86,16 @@ export function initConsole(deps = {}) {
       label: 'Launch RPG Quest',
       desc: 'Start top-down RPG mini-game',
       cat: 'PLAY',
+      transfersFocus: true,
       action: () => openRpg()
+    },
+    {
+      id: 'achievements',
+      label: 'Open Achievements',
+      desc: 'View unlocked achievements & badges',
+      cat: 'STATS',
+      transfersFocus: true,
+      action: () => openAchievements()
     },
     {
       id: 'copy-email',
@@ -145,10 +156,12 @@ export function initConsole(deps = {}) {
     updateModalBlur();
 
     inputEl.value = '';
-    selectedIndex = 0;
     renderResults('');
-    inputEl.focus();
-
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        inputEl.focus();
+      });
+    });
     if (typeof onOpen === 'function') {
       try {
         onOpen();
@@ -158,7 +171,7 @@ export function initConsole(deps = {}) {
     }
   }
 
-  function closeConsole() {
+  function closeConsole(skipRestore = false) {
     if (!isOpen) return;
     isOpen = false;
     consoleEl.classList.remove('open');
@@ -166,10 +179,22 @@ export function initConsole(deps = {}) {
     document.body.style.overflow = '';
     updateModalBlur();
 
-    if (lastFocusedEl && typeof lastFocusedEl.focus === 'function') {
-      lastFocusedEl.focus();
-      lastFocusedEl = null;
+    if (inputEl && typeof inputEl.blur === 'function') {
+      try {
+        inputEl.blur();
+      } catch (e) {}
     }
+
+    if (!skipRestore && lastFocusedEl && typeof lastFocusedEl.focus === 'function') {
+      try {
+        if (document.body.contains(lastFocusedEl)) {
+          lastFocusedEl.focus();
+        }
+      } catch (e) {
+        // Fallback safely if restore element cannot receive focus
+      }
+    }
+    lastFocusedEl = null;
   }
 
   function updateSelection() {
@@ -282,7 +307,7 @@ export function initConsole(deps = {}) {
       e.preventDefault();
       if (filteredCommands.length > 0 && filteredCommands[selectedIndex]) {
         const cmd = filteredCommands[selectedIndex];
-        closeConsole();
+        closeConsole(!!cmd.transfersFocus);
         cmd.action();
       }
     }
@@ -294,8 +319,9 @@ export function initConsole(deps = {}) {
     if (!item) return;
     const idx = parseInt(item.getAttribute('data-index') || '0', 10);
     if (filteredCommands[idx]) {
-      closeConsole();
-      filteredCommands[idx].action();
+      const cmd = filteredCommands[idx];
+      closeConsole(!!cmd.transfersFocus);
+      cmd.action();
     }
   });
 

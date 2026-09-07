@@ -22,11 +22,11 @@ export function initHero(canvas) {
   if (!canvas) return () => {};
 
   let animationFrameId = null;
-  let isIntersecting = true;
-  let targetMouseX = 0;
-  let targetMouseY = 0;
+  let rawCursorX = 0;
+  let rawCursorY = 0;
   let mouseX = 0;
   let mouseY = 0;
+  const headNDC = new THREE.Vector3();
 
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -61,13 +61,33 @@ export function initHero(canvas) {
   const mascot = new THREE.Group();
   scene.add(mascot);
 
+  let basePosX = -2.0;
+  let basePosY = -0.2;
+  let baseScale = 0.9;
+  let dockX = -2.0;
+  let dockY = -1.4;
+  let dockScale = 0.28;
+
   function updateMascotLayout() {
+    const aspect = window.innerWidth / window.innerHeight;
+    const vHalfHeight = camera.position.z * Math.tan((camera.fov * Math.PI) / 360);
+    const vHalfWidth = vHalfHeight * aspect;
+
     if (window.innerWidth > 900) {
-      mascot.position.set(-2.0, -0.2, 0);
-      mascot.scale.setScalar(0.9);
+      basePosX = -2.0;
+      basePosY = -0.2;
+      baseScale = 0.9;
+      dockX = -vHalfWidth * 0.82;
+      dockY = -vHalfHeight * 0.80;
+      dockScale = 0.28;
     } else {
-      mascot.position.set(0, 1.5, 0);
-      mascot.scale.setScalar(0.7);
+      // x must stay non-zero — exactly 0 causes a full render failure on some GL drivers (confirmed via pixel-readback testing)
+      basePosX = -0.05;
+      basePosY = 1.1;
+      baseScale = 0.5;
+      dockX = -vHalfWidth * 0.75;
+      dockY = -vHalfHeight * 0.80;
+      dockScale = 0.25;
     }
   }
   updateMascotLayout();
@@ -135,8 +155,13 @@ export function initHero(canvas) {
   const pupilLeft = makeEye(-1);
   const pupilRight = makeEye(1);
 
-  // 3. Wavy Dark Hair
-  const hairMat = new THREE.MeshStandardMaterial({ color: HAIR_COLOR, roughness: 0.8 });
+  // 3. Wavy Dark Hair (Physical material for sheen)
+  const hairMat = new THREE.MeshPhysicalMaterial({
+    color: HAIR_COLOR,
+    roughness: 0.6,
+    clearcoat: 0.5,
+    clearcoatRoughness: 0.2,
+  });
   const hairSphereGeo = new THREE.SphereGeometry(0.45, 16, 16);
   const hairCapsuleGeo = new THREE.CapsuleGeometry(0.2, 0.5, 8, 16);
   // Hair Base (prevents bald spots on the scalp)
@@ -145,27 +170,49 @@ export function initHero(canvas) {
   hairBase.position.set(0, 0.15, -0.1);
   hairBase.scale.set(1.05, 1.0, 1.0);
 
-  // Top crown
-  for(let i=0; i<5; i++) {
+  // Top crown (deterministic layered locks)
+  const crownTransforms = [
+    { pos: [0, 1.22, 0.1], rot: [0.2, 0, 0], scale: [1.5, 1.0, 1.4] },
+    { pos: [-0.4, 1.18, -0.1], rot: [0.1, -0.3, -0.2], scale: [1.4, 1.0, 1.3] },
+    { pos: [0.4, 1.18, -0.1], rot: [0.1, 0.3, 0.2], scale: [1.4, 1.0, 1.3] },
+    { pos: [-0.2, 1.25, -0.25], rot: [-0.2, -0.1, 0.1], scale: [1.3, 0.9, 1.3] },
+    { pos: [0.2, 1.25, -0.25], rot: [-0.2, 0.1, -0.1], scale: [1.3, 0.9, 1.3] },
+  ];
+  crownTransforms.forEach((t) => {
     const h = addMesh(hairSphereGeo, hairMat, headGroup);
-    h.scale.set(1.5, 1.0, 1.4);
-    h.position.set((Math.random()-0.5)*1.3, 1.1 + Math.random()*0.2, (Math.random()-0.5)*0.8);
-    h.rotation.set(Math.random(), Math.random(), Math.random());
-  }
-  // Front Bangs
-  for(let i=0; i<5; i++) {
+    h.scale.set(...t.scale);
+    h.position.set(...t.pos);
+    h.rotation.set(...t.rot);
+  });
+
+  // Front Bangs (deterministic locks framing forehead)
+  const bangTransforms = [
+    { pos: [-0.7, 0.88, 0.95], rot: [0.55, 0.1, -0.35] },
+    { pos: [-0.35, 0.92, 1.05], rot: [0.48, 0.05, -0.18] },
+    { pos: [0.0, 0.94, 1.08], rot: [0.45, 0, 0] },
+    { pos: [0.35, 0.92, 1.05], rot: [0.48, -0.05, 0.18] },
+    { pos: [0.7, 0.88, 0.95], rot: [0.55, -0.1, 0.35] },
+  ];
+  bangTransforms.forEach((t) => {
     const h = addMesh(hairCapsuleGeo, hairMat, headGroup);
-    const xOffset = -0.7 + (i * 0.35);
-    h.position.set(xOffset, 0.85 + Math.random()*0.1, 0.95 + Math.random()*0.15);
-    h.rotation.set(0.4 + Math.random()*0.3, 0, xOffset * 0.5);
-  }
-  // Side locks
-  for(let i=0; i<6; i++) {
+    h.position.set(...t.pos);
+    h.rotation.set(...t.rot);
+  });
+
+  // Side locks (deterministic side framing)
+  const sideTransforms = [
+    { pos: [-1.05, 0.45, 0.2], rot: [0.25, -0.2, -0.4] },
+    { pos: [1.05, 0.45, 0.2], rot: [0.25, 0.2, 0.4] },
+    { pos: [-1.08, 0.25, 0.05], rot: [0.35, -0.1, -0.4] },
+    { pos: [1.08, 0.25, 0.05], rot: [0.35, 0.1, 0.4] },
+    { pos: [-1.02, 0.1, -0.1], rot: [0.45, 0, -0.35] },
+    { pos: [1.02, 0.1, -0.1], rot: [0.45, 0, 0.35] },
+  ];
+  sideTransforms.forEach((t) => {
     const h = addMesh(hairCapsuleGeo, hairMat, headGroup);
-    const side = i % 2 === 0 ? 1 : -1;
-    h.position.set(side * 1.05, 0.1 + Math.random()*0.5, -0.1 + Math.random()*0.4);
-    h.rotation.set(Math.random()*0.5, 0, side * 0.4);
-  }
+    h.position.set(...t.pos);
+    h.rotation.set(...t.rot);
+  });
   // Back bulk
   const backHair = addMesh(hairSphereGeo, hairMat, headGroup);
   backHair.scale.set(2.4, 1.8, 1.6);
@@ -247,18 +294,10 @@ export function initHero(canvas) {
 
   // Mouse tracking 
   const handleMouseMove = (event) => {
-    targetMouseX = (event.clientX / window.innerWidth - 0.5) * 2;
-    targetMouseY = -(event.clientY / window.innerHeight - 0.5) * 2;
+    rawCursorX = (event.clientX / window.innerWidth - 0.5) * 2;
+    rawCursorY = -(event.clientY / window.innerHeight - 0.5) * 2;
   };
   window.addEventListener('mousemove', handleMouseMove);
-
-  let scrollProgress = 0;
-  const handleScroll = () => {
-    const heroHeight = document.getElementById('home')?.offsetHeight || window.innerHeight;
-    scrollProgress = Math.min(1, Math.max(0, window.scrollY / heroHeight));
-  };
-  window.addEventListener('scroll', handleScroll, { passive: true });
-  handleScroll();
 
   const handleResize = () => {
     const width = window.innerWidth;
@@ -271,26 +310,12 @@ export function initHero(canvas) {
   };
   window.addEventListener('resize', handleResize);
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        isIntersecting = entry.isIntersecting;
-        if (isIntersecting && !document.hidden && !animationFrameId) {
-          animate();
-        }
-      });
-    },
-    { threshold: 0.1 }
-  );
-
-  const heroSection = document.getElementById('home') || canvas;
-  observer.observe(heroSection);
-
   const handleVisibilityChange = () => {
     if (document.hidden && animationFrameId) {
       cancelAnimationFrame(animationFrameId);
       animationFrameId = null;
-    } else if (!document.hidden && isIntersecting && !animationFrameId) {
+      clock.stop();
+    } else if (!document.hidden && !animationFrameId) {
       animate();
     }
   };
@@ -299,18 +324,39 @@ export function initHero(canvas) {
   const clock = new THREE.Clock();
 
   const animate = () => {
-    if (!isIntersecting || document.hidden) {
+    if (document.hidden) {
       animationFrameId = null;
       clock.stop();
       return;
     }
-
     if (!clock.running) clock.start();
     const t = clock.getElapsedTime();
 
+    // Persistent dock transform based on scroll position
+    const dockProgress = THREE.MathUtils.clamp(window.scrollY / window.innerHeight, 0, 1);
+    let currentScale, currentX, currentY;
+
+    if (window.innerWidth > 900) {
+      currentScale = THREE.MathUtils.lerp(baseScale, dockScale, dockProgress);
+      currentX = THREE.MathUtils.lerp(basePosX, dockX, dockProgress);
+      currentY = THREE.MathUtils.lerp(basePosY, dockY, dockProgress);
+    } else {
+      const vHalfHeight = camera.position.z * Math.tan((camera.fov * Math.PI) / 360);
+      const scrollOffset = (window.scrollY / window.innerHeight) * (vHalfHeight * 2);
+      currentScale = baseScale;
+      currentX = basePosX;
+      currentY = basePosY - scrollOffset;
+    }
+    mascot.scale.setScalar(currentScale);
+    mascot.position.set(currentX, currentY, 0);
+
+    headGroup.getWorldPosition(headNDC).project(camera);
+    const targetX = THREE.MathUtils.clamp(rawCursorX - headNDC.x, -1.0, 1.0);
+    const targetY = THREE.MathUtils.clamp(rawCursorY - headNDC.y, -1.0, 1.0);
+
     const easing = 0.12;
-    mouseX += (targetMouseX - mouseX) * easing;
-    mouseY += (targetMouseY - mouseY) * easing;
+    mouseX += (targetX - mouseX) * easing;
+    mouseY += (targetY - mouseY) * easing;
 
     // Googly-eye pupil tracking
     const offsetX = THREE.MathUtils.clamp(mouseX * PUPIL_RANGE, -PUPIL_RANGE, PUPIL_RANGE);
@@ -333,14 +379,13 @@ export function initHero(canvas) {
       // Slight body twist
       bodyGroup.rotation.y = mouseX * 0.05;
     }
-
-    // Scroll dolly
-    camera.position.z = 6.5 + scrollProgress * 1.2;
+    camera.position.z = 6.5;
     camera.lookAt(0, 0, 0);
 
     renderer.render(scene, camera);
 
-    if (prefersReducedMotion) {
+    const isPaused = prefersReducedMotion || (document.documentElement.dataset.fx === 'off');
+    if (isPaused) {
       animationFrameId = null;
       return;
     }
@@ -349,17 +394,24 @@ export function initHero(canvas) {
   };
 
   animate();
+  const handleFxChange = () => {
+    const isPaused = prefersReducedMotion || (document.documentElement.dataset.fx === 'off');
+    if (!isPaused && animationFrameId === null) {
+      animate();
+    }
+  };
+  window.addEventListener('fxchange', handleFxChange);
+
 
   return function cleanup() {
     if (animationFrameId) {
       cancelAnimationFrame(animationFrameId);
       animationFrameId = null;
     }
-    observer.disconnect();
     window.removeEventListener('mousemove', handleMouseMove);
-    window.removeEventListener('scroll', handleScroll);
     window.removeEventListener('resize', handleResize);
     document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.removeEventListener('fxchange', handleFxChange);
 
     disposables.forEach((d) => d.dispose());
     renderer.dispose();

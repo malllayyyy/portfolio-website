@@ -6,7 +6,7 @@ export function initRpg(canvas, onUnlockSkill) {
 
   const WIDTH = 640;
   const HEIGHT = 400;
-
+  const NPC_INTERACT_MARGIN = 20;
   canvas.width = WIDTH;
   canvas.height = HEIGHT;
 
@@ -40,32 +40,35 @@ export function initRpg(canvas, onUnlockSkill) {
     {
       id: 1,
       name: 'Deployment Platform',
+      title: 'The Forge Master',
       x: 140,
       y: 90,
       width: 24,
       height: 24,
-      color: '#00f5a0',
-      text: "I built my own Vercel. 6/6 phases shipped, 13/13 tests passing, zero auth libraries used. Push a repo — I'll handle the rest."
+      color: '#ff9e00',
+      text: "Behold the grand engine! I forged this deployment citadel from scratch—no borrowed magic, zero auth libraries. It channels both the blazing light of frontend realms and the deep, rumbling power of backend servers into a single mighty forge. Offer your sacred repository to the flames, traveler, and I shall handle the rest!"
     },
     {
       id: 2,
       name: 'ProAcademys',
+      title: 'The Grand Archivist',
       x: 480,
       y: 90,
       width: 24,
       height: 24,
-      color: '#00f5a0',
-      text: 'Migrated 37 legacy MySQL tables to MongoDB while students were taking live courses — zero downtime, zero dropped data.'
+      color: '#ff9e00',
+      text: "Hush now, the scholars are studying! I have completely restored and redesigned the academy's grand archives, purging every last corrupted spell and lingering bug from its halls. I now stand as its eternal guardian, actively maintaining its enchantments to ensure the knowledge flows uninterrupted!"
     },
     {
       id: 3,
       name: 'GameZone',
+      title: 'The Station Master',
       x: 309,
       y: 128,
       width: 24,
       height: 24,
       color: '#ff9e00',
-      text: 'Halt, traveler! My Android artifact tracks every gaming station and calculates session gold down to the minute. No free playtime!'
+      text: "Halt, traveler! Before you sit at the grand tables, know that my Android artifact sees all. It meticulously tracks every gaming station in the realm, calculating your session gold down to the very minute. There is no free playtime in this tavern!"
     }
   ];
 
@@ -172,7 +175,7 @@ export function initRpg(canvas, onUnlockSkill) {
     if (currentDialogue && currentDialogue.name === npc.name) {
       currentDialogue = null;
     } else {
-      currentDialogue = { name: npc.name, text: npc.text };
+      currentDialogue = { name: npc.name, title: npc.title, text: npc.text };
     }
   }
 
@@ -214,13 +217,12 @@ export function initRpg(canvas, onUnlockSkill) {
 
     if (!collideY) player.y = nextY;
 
-    // Auto-dialogue on stepping into NPC proximity (only on the frame
-    // proximity is newly entered, so pressing E to dismiss it isn't
-    // immediately re-opened by this same check on the next frame).
-    // Walking away from every NPC closes it and clears the tracked NPC.
+    // Tracks activeNearNpcId on NPC proximity enter/exit (used to show the
+    // '[E] TALK' prompt and auto-close dialogue when walking away; dialogue
+    // itself is opened via checkNPCInteraction on E/Space keypress).
     let nearNpc = null;
     npcs.forEach((npc) => {
-      const nearRect = { x: npc.x - 10, y: npc.y - 10, width: npc.width + 20, height: npc.height + 20 };
+      const nearRect = { x: npc.x - NPC_INTERACT_MARGIN, y: npc.y - NPC_INTERACT_MARGIN, width: npc.width + NPC_INTERACT_MARGIN * 2, height: npc.height + NPC_INTERACT_MARGIN * 2 };
       if (checkCollision(player, nearRect)) {
         nearNpc = npc;
       }
@@ -229,7 +231,6 @@ export function initRpg(canvas, onUnlockSkill) {
     if (nearNpc) {
       if (activeNearNpcId !== nearNpc.id) {
         activeNearNpcId = nearNpc.id;
-        currentDialogue = { name: nearNpc.name, text: nearNpc.text };
       }
     } else if (activeNearNpcId !== null) {
       activeNearNpcId = null;
@@ -326,7 +327,7 @@ export function initRpg(canvas, onUnlockSkill) {
       ctx.fillText(npc.name, npc.x + npc.width / 2, npc.y - 8);
 
       // Interaction prompt
-      const nearRect = { x: npc.x - 20, y: npc.y - 20, width: npc.width + 40, height: npc.height + 40 };
+      const nearRect = { x: npc.x - NPC_INTERACT_MARGIN, y: npc.y - NPC_INTERACT_MARGIN, width: npc.width + NPC_INTERACT_MARGIN * 2, height: npc.height + NPC_INTERACT_MARGIN * 2 };
       if (checkCollision(player, nearRect)) {
         ctx.fillStyle = '#ff9e00';
         ctx.font = '8px "Press Start 2P", monospace';
@@ -383,7 +384,7 @@ export function initRpg(canvas, onUnlockSkill) {
       ctx.fillStyle = '#ff9e00';
       ctx.font = '10px "Press Start 2P", monospace';
       ctx.textAlign = 'left';
-      ctx.fillText(`💬 ${currentDialogue.name}:`, boxX + paddingX, boxY + verticalPadding + 10);
+      ctx.fillText(`💬 ${currentDialogue.title} — ${currentDialogue.name}:`, boxX + paddingX, boxY + verticalPadding + 10);
 
       ctx.fillStyle = '#e7eaf0';
       ctx.font = '12px "Space Grotesk", sans-serif';

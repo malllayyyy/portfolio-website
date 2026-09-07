@@ -1,4 +1,4 @@
-export function initPong(canvas) {
+export function initPong(canvas, onWin) {
   if (!canvas) return () => {};
 
   const ctx = canvas.getContext('2d');
@@ -193,6 +193,9 @@ export function initPong(canvas) {
       if (playerScore >= WINNING_SCORE) {
         gameState = 'GAMEOVER';
         winnerText = 'VICTORY — YOU WIN!';
+        if (typeof onWin === 'function') {
+          onWin();
+        }
       } else {
         resetBall('player');
       }

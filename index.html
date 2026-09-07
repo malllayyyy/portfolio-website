@@ -4,6 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Portfolio of Malay, Full-Stack Developer, Systems Builder, and Game Tinkerer.">
+
+  <!-- OpenGraph & Twitter Social Meta -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Malay — Portfolio">
+  <meta property="og:title" content="Malay — Full-Stack Developer">
+  <meta property="og:description" content="Portfolio of Malay, Full-Stack Developer, Systems Builder, and Game Tinkerer.">
+  <meta property="og:image" content="/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Malay — Full-Stack Developer, Systems Builder, Game Tinkerer">
+  <!-- TODO: update og:url if a custom domain is added -->
+  <meta property="og:url" content="https://portfolio-website.vercel.app/">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Malay — Full-Stack Developer">
+  <meta name="twitter:description" content="Portfolio of Malay, Full-Stack Developer, Systems Builder, and Game Tinkerer.">
+  <meta name="twitter:image" content="/og.png">
+
   <title>Malay — Full-Stack Developer</title>
 
   <!-- Favicon -->
@@ -27,10 +45,25 @@
   <script>
     (function() {
       try {
+        var doc = document.documentElement;
         var bootSeen = sessionStorage.getItem('bootSeen');
         var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (bootSeen || reducedMotion) {
-          document.documentElement.classList.add('skip-boot');
+          doc.classList.add('skip-boot');
+        }
+        var savedFx = localStorage.getItem('pref-fx');
+        if (savedFx === 'full' || savedFx === 'lite' || savedFx === 'off') {
+          doc.dataset.fx = savedFx;
+        } else if (reducedMotion) {
+          doc.dataset.fx = 'off';
+        } else {
+          doc.dataset.fx = 'full';
+        }
+        var savedTheme = localStorage.getItem('pref-theme');
+        if (savedTheme === 'green' || savedTheme === 'amber') {
+          doc.dataset.theme = savedTheme;
+        } else {
+          doc.dataset.theme = 'green';
         }
       } catch (e) {}
     })();
@@ -98,6 +131,21 @@
         </ul>
       </nav>
 
+      <div id="hud-tools" class="hud-tools">
+        <button id="achievements-btn" class="hud-tool-btn" type="button" aria-label="Achievements: 0 of 11 unlocked. Activate to view.">
+          <span class="hud-tool-icon">🏆</span>
+          <span id="ach-hud-count" class="hud-tool-count">0/11</span>
+        </button>
+        <button id="fx-toggle-btn" class="hud-tool-btn" type="button" aria-label="Effects level: FULL. Activate to change.">
+          <span class="hud-tool-icon">⚡</span>
+          <span class="hud-tool-label">FX · FULL</span>
+        </button>
+        <button id="theme-toggle-btn" class="hud-tool-btn" type="button" aria-label="Color theme: GREEN. Activate to change.">
+          <span class="hud-tool-icon">◉</span>
+          <span class="hud-tool-label">GREEN</span>
+        </button>
+      </div>
+
       <button id="hamburger-btn" class="hamburger-btn" aria-expanded="false" aria-controls="mobile-menu" aria-label="Toggle navigation menu">
         MENU
       </button>
@@ -111,6 +159,20 @@
     <a href="#stats" class="mobile-link">STATS</a>
     <a href="#arcade" class="mobile-link">ARCADE</a>
     <a href="#contact" class="mobile-link">QUEST BOARD</a>
+    <div class="mobile-menu-tools">
+      <button id="mobile-achievements-btn" class="hud-tool-btn mobile-tool-btn" type="button" aria-label="Achievements: 0 of 11 unlocked. Activate to view.">
+        <span class="hud-tool-icon">🏆</span>
+        <span id="mobile-ach-hud-label" class="hud-tool-label">ACHIEVEMENTS — 0/11</span>
+      </button>
+      <button id="mobile-fx-toggle-btn" class="hud-tool-btn mobile-tool-btn" type="button" aria-label="Effects level: FULL. Activate to change.">
+        <span class="hud-tool-icon">⚡</span>
+        <span class="hud-tool-label">FX · FULL</span>
+      </button>
+      <button id="mobile-theme-toggle-btn" class="hud-tool-btn mobile-tool-btn" type="button" aria-label="Color theme: GREEN. Activate to change.">
+        <span class="hud-tool-icon">◉</span>
+        <span class="hud-tool-label">GREEN</span>
+      </button>
+    </div>
   </div>
 
   <canvas id="hero-canvas" aria-hidden="true"></canvas>
@@ -510,8 +572,7 @@
 
           <!-- TODO: add real LinkedIn URL -->
           <div class="save-card missing">
-            <a href="#" data-missing="true" class="save-card-link">
-              <div class="card-icon">💼</div>
+            <a href="#" data-missing="true" class="save-card-link" aria-disabled="true" tabindex="-1">
               <div class="card-info">
                 <div class="card-header-row">
                   <h4>LINKEDIN</h4>
@@ -613,6 +674,37 @@
           <div></div>
         </div>
         <button id="rpg-btn-action" class="touch-btn" style="width: 60px; height: 60px; border-radius: 50%;">[E]</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACHIEVEMENTS MODAL (W4) -->
+  <div id="achievements-modal" class="game-modal" role="dialog" aria-modal="true" aria-labelledby="ach-modal-title" aria-hidden="true">
+    <div class="arcade-frame">
+      <div class="modal-header">
+        <h3 id="ach-modal-title" class="modal-title">ACHIEVEMENTS</h3>
+        <button id="ach-close" class="close-btn" aria-label="Close Achievements">✕</button>
+      </div>
+      <div id="ach-summary" class="ach-summary" aria-live="polite">0 of 11 UNLOCKED</div>
+      <ul id="ach-list" class="ach-list" role="list"></ul>
+      <div style="text-align: center; margin-top: 1.25rem;">
+        <button id="ach-reset-btn" class="btn btn-secondary" type="button">RESET PROGRESS</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMAND CONSOLE (W2) -->
+  <div id="command-console" class="console-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-label="Command Console">
+    <div class="console-palette">
+      <div class="console-input-wrapper">
+        <span class="console-prompt" aria-hidden="true">&gt;</span>
+        <input id="console-input" type="text" class="console-input" placeholder="Type a command or search..." autocomplete="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="console-results" aria-autocomplete="list">
+        <kbd class="console-shortcut-hint">ESC</kbd>
+      </div>
+      <ul id="console-results" class="console-results" role="listbox" aria-label="Command Suggestions"></ul>
+      <div class="console-footer">
+        <span class="console-hint">↑↓ navigate · ↵ run · esc close</span>
+        <span id="console-kbd-shortcut" class="console-kbd-badge">⌘K</span>
       </div>
     </div>
   </div>

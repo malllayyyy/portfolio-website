@@ -4,6 +4,16 @@
 
 import { initPong } from './games/pong.js';
 import { initRpg } from './games/rpg.js';
+import { initConsole } from './console.js';
+import { initAchievements, unlockAchievement } from './achievements.js';
+
+export function getFx() {
+  return document.documentElement.dataset.fx || 'full';
+}
+
+export function getTheme() {
+  return document.documentElement.dataset.theme || 'green';
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -130,7 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 3. Continuous 3D Card Tilt
-    if (!prefersReducedMotion && intersectingCards.size > 0) {
+    if (!prefersReducedMotion && getFx() === 'full' && intersectingCards.size > 0) {
       const viewportHeight = window.innerHeight;
       const halfViewport = viewportHeight / 2;
       intersectingCards.forEach((el) => {
@@ -177,13 +187,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Level & Achievements Observer
   const visitedSections = new Set();
-  const sectionAchievements = {
-    'home': 'Reached the Title Screen',
-    'stats': 'Character Sheet Unlocked',
-    'levels': 'Level Select Discovered',
-    'arcade': 'Entered the Arcade',
-    'contact': 'Reached the Quest Board'
-  };
 
   const sections = document.querySelectorAll('section[id]');
   const sectionObserver = new IntersectionObserver((entries) => {
@@ -224,9 +227,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             levelBadge.classList.add('pulse');
           }
 
-          if (sectionAchievements[id]) {
-            showToast('ACHIEVEMENT UNLOCKED', sectionAchievements[id]);
-          }
+          unlockAchievement(`sect-${id}`);
         }
       }
     });
@@ -290,12 +291,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (cursor && !isTouchDevice) {
     window.addEventListener('mousemove', (e) => {
+      if (getFx() !== 'full') {
+        cursor.style.display = 'none';
+        return;
+      }
+      cursor.style.display = '';
       cursor.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0) translate(-50%, -50%)`;
     }, { passive: true });
 
     const hoverables = document.querySelectorAll('a, button, input, textarea, .project-card, .arcade-cabinet, .save-card, .quest-node, .tech-badge');
     hoverables.forEach((el) => {
-      el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+      el.addEventListener('mouseenter', () => {
+        if (getFx() === 'full') cursor.classList.add('hover');
+      });
       el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
     });
   }
@@ -305,6 +313,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const spotlightCards = document.querySelectorAll('.project-card, .arcade-cabinet, .save-card');
     spotlightCards.forEach((card) => {
       card.addEventListener('mousemove', (e) => {
+        if (getFx() === 'off') return;
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
@@ -316,7 +325,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const magneticEls = document.querySelectorAll('.btn-primary, .btn-secondary, .quest-node');
     magneticEls.forEach((el) => {
       el.addEventListener('mousemove', (e) => {
-        if (prefersReducedMotion) return;
+        if (prefersReducedMotion || getFx() !== 'full') return;
         const rect = el.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
@@ -340,7 +349,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const sparkColors = ['#00f5a0', '#ff9e00'];
   sparkTargets.forEach((el) => {
     el.addEventListener('click', (e) => {
-      if (prefersReducedMotion) return;
+      if (prefersReducedMotion || getFx() !== 'full') return;
       const x = e.clientX;
       const y = e.clientY;
       if (!x && !y) return;
@@ -394,7 +403,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!cheatOverlay) return;
 
     cheatOverlay.classList.add('active');
-    showToast('SECRET UNLOCKED', 'Konami Cheat Code Activated!');
+    unlockAchievement('cheat-konami');
 
     // Spawn 30 confetti pieces
     const colors = ['#00f5a0', '#ff9e00'];
@@ -473,14 +482,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   function updateModalBlur() {
     const pongModalEl = document.getElementById('pong-modal');
     const rpgModalEl = document.getElementById('rpg-modal');
+    const achModalEl = document.getElementById('achievements-modal');
     const mobileMenuEl = document.getElementById('mobile-menu');
+    const consoleEl = document.getElementById('command-console');
     const isAnyOpen = (pongModalEl && pongModalEl.classList.contains('open')) ||
                       (rpgModalEl && rpgModalEl.classList.contains('open')) ||
-                      (mobileMenuEl && mobileMenuEl.classList.contains('open'));
+                      (achModalEl && achModalEl.classList.contains('open')) ||
+                      (mobileMenuEl && mobileMenuEl.classList.contains('open')) ||
+                      (consoleEl && consoleEl.classList.contains('open'));
     document.body.classList.toggle('modal-open', isAnyOpen);
   }
 
   function openModal(modal, opener) {
+    if (modal.classList.contains('open')) return;
     lastFocusedEl = opener || document.activeElement;
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
@@ -513,7 +527,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       openModal(pongModal, openPongBtn);
       const canvas = document.getElementById('pong-canvas');
       if (canvas) {
-        pongCleanup = initPong(canvas);
+        pongCleanup = initPong(canvas, () => {
+          unlockAchievement('pong-win');
+        });
       }
     });
   }
@@ -535,8 +551,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       openModal(rpgModal, openRpgBtn);
       const canvas = document.getElementById('rpg-canvas');
       if (canvas) {
+        if (rpgCleanup) {
+          rpgCleanup();
+          rpgCleanup = null;
+        }
         rpgCleanup = initRpg(canvas, (skillText) => {
-          showToast('SKILL UNLOCKED', skillText);
+          const unlockedNew = unlockAchievement('orb-skill');
+          if (!unlockedNew) {
+            showToast('SKILL UNLOCKED', skillText);
+          }
         });
       }
     });
@@ -564,10 +587,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         closeModal(rpgModal);
         if (rpgCleanup) { rpgCleanup(); rpgCleanup = null; }
       }
+      const achModalEl = document.getElementById('achievements-modal');
+      if (achModalEl && achModalEl.classList.contains('open')) {
+        closeModal(achModalEl);
+      }
     }
   });
 
-  [pongModal, rpgModal].forEach((modal) => {
+  const achModal = document.getElementById('achievements-modal');
+  [pongModal, rpgModal, achModal].forEach((modal) => {
     if (modal) {
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
@@ -640,7 +668,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         clearTimeout(restoreTimer);
         btn.textContent = '[COPIED!]';
         btn.classList.add('copied');
-        showToast('COPIED TO CLIPBOARD', textToCopy);
+        const unlockedNew = unlockAchievement('copy-contact');
+        if (!unlockedNew) {
+          showToast('COPIED TO CLIPBOARD', textToCopy);
+        }
 
         restoreTimer = setTimeout(() => {
           btn.textContent = originalLabel;
@@ -651,9 +682,132 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
   });
+  // ------------------------------------------------------------------------
+  // 11. FX LEVEL & COLOR THEME CONTROLS (W3)
+  // ------------------------------------------------------------------------
+  function updateHudTools() {
+    const fxLevel = getFx().toUpperCase();
+    const themeName = getTheme().toUpperCase();
+
+    const fxBtns = [
+      document.getElementById('fx-toggle-btn'),
+      document.getElementById('mobile-fx-toggle-btn')
+    ];
+    fxBtns.forEach((btn) => {
+      if (!btn) return;
+      btn.setAttribute('aria-label', `Effects level: ${fxLevel}. Activate to change.`);
+      const labelSpan = btn.querySelector('.hud-tool-label');
+      if (labelSpan) labelSpan.textContent = `FX · ${fxLevel}`;
+    });
+
+    const themeBtns = [
+      document.getElementById('theme-toggle-btn'),
+      document.getElementById('mobile-theme-toggle-btn')
+    ];
+    themeBtns.forEach((btn) => {
+      if (!btn) return;
+      btn.setAttribute('aria-label', `Color theme: ${themeName}. Activate to change.`);
+      const labelSpan = btn.querySelector('.hud-tool-label');
+      if (labelSpan) labelSpan.textContent = themeName;
+    });
+  }
+
+  function setFx(level) {
+    const validLevels = ['full', 'lite', 'off'];
+    if (!validLevels.includes(level)) return;
+    document.documentElement.dataset.fx = level;
+    try {
+      localStorage.setItem('pref-fx', level);
+    } catch (e) {}
+    updateHudTools();
+    window.dispatchEvent(new CustomEvent('fxchange', { detail: level }));
+  }
+
+  function cycleFx() {
+    const current = getFx();
+    const next = current === 'full' ? 'lite' : current === 'lite' ? 'off' : 'full';
+    setFx(next);
+    showToast('FX LEVEL CHANGED', `Effects level set to ${next.toUpperCase()}`);
+    return next;
+  }
+
+  function setTheme(theme) {
+    const validThemes = ['green', 'amber'];
+    if (!validThemes.includes(theme)) return;
+    document.documentElement.dataset.theme = theme;
+    try {
+      localStorage.setItem('pref-theme', theme);
+    } catch (e) {}
+    updateHudTools();
+  }
+
+  function toggleTheme() {
+    const current = getTheme();
+    const next = current === 'green' ? 'amber' : 'green';
+    setTheme(next);
+    showToast('THEME CHANGED', `Color palette set to ${next.toUpperCase()}`);
+    return next;
+  }
+
+  ['fx-toggle-btn', 'mobile-fx-toggle-btn'].forEach((id) => {
+    const btn = document.getElementById(id);
+    if (btn) btn.addEventListener('click', cycleFx);
+  });
+
+  ['theme-toggle-btn', 'mobile-theme-toggle-btn'].forEach((id) => {
+    const btn = document.getElementById(id);
+    if (btn) btn.addEventListener('click', toggleTheme);
+  });
+
+  updateHudTools();
 
   // ------------------------------------------------------------------------
-  // 11. QUEST ARCHETYPE QUICK-SELECT PILLS
+  // 12. COMMAND CONSOLE INITIALIZATION (W2)
+  // ------------------------------------------------------------------------
+  initConsole({
+    onOpen: () => {
+      unlockAchievement('use-console');
+    },
+    updateModalBlur,
+    showToast,
+    getFx,
+    cycleFx,
+    getTheme,
+    toggleTheme,
+    openPong: () => {
+      if (openPongBtn) openPongBtn.click();
+    },
+    openRpg: () => {
+      if (openRpgBtn) openRpgBtn.click();
+    },
+    triggerReboot: () => {
+      try {
+        sessionStorage.removeItem('bootSeen');
+      } catch (e) {}
+      location.reload();
+    },
+    scrollSection: (selector) => {
+      const el = document.querySelector(selector);
+      if (!el) return;
+      const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const behavior = (getFx() === 'off' || isReduced) ? 'auto' : 'smooth';
+      el.scrollIntoView({ behavior, block: 'start' });
+    },
+    copyText: (text) => {
+      if (!navigator.clipboard || !navigator.clipboard.writeText) {
+        showToast('COPY UNAVAILABLE', 'Clipboard access needs HTTPS — copy manually.');
+        return;
+      }
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('COPIED TO CLIPBOARD', text);
+      }).catch(() => {
+        showToast('COPY FAILED', 'Could not access clipboard.');
+      });
+    }
+  });
+
+  // ------------------------------------------------------------------------
+  // 13. QUEST ARCHETYPE QUICK-SELECT PILLS
   // ------------------------------------------------------------------------
   const questPills = document.querySelectorAll('.quest-pill');
   let selectedCategory = '';
@@ -693,7 +847,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // ------------------------------------------------------------------------
-  // 12. CONTACT FORM MAILTO HANDLING & SUBMIT FEEDBACK
+  // 14. CONTACT FORM MAILTO HANDLING & SUBMIT FEEDBACK
   // ------------------------------------------------------------------------
   const questForm = document.getElementById('quest-form');
   if (questForm) {
@@ -721,7 +875,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 600);
       }
 
-      showToast('QUEST ACCEPTED', 'Message dispatched — check your email client.');
+      const unlockedNew = unlockAchievement('send-quest');
+      if (!unlockedNew) {
+        showToast('QUEST ACCEPTED', 'Message dispatched — check your email client.');
+      }
 
       questForm.reset();
       selectedCategory = '';
@@ -732,4 +889,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
   }
+  // ------------------------------------------------------------------------
+  // 15. ACHIEVEMENTS SYSTEM INITIALIZATION (W4)
+  // ------------------------------------------------------------------------
+  initAchievements({
+    showToast,
+    openModal,
+    closeModal,
+    triggerConfetti: triggerCheatCode
+  });
 });

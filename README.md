@@ -8,3 +8,6 @@ A static, zero-build-step portfolio website built with HTML, CSS, JavaScript, an
 
 ## Editing Personal Links
 - Edit `index.html` in the `#contact` section to update Email, GitHub, and LinkedIn links.
+
+## Social Preview Image
+- `og.png` is rasterized from `og.svg` (1200x630). To regenerate, open `og.svg` in a browser at 1200x630 resolution or render it to `og.png`.

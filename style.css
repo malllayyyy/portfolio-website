@@ -30,6 +30,16 @@
   --font-display: 'Unbounded', sans-serif;
   --font-pixel: 'Press Start 2P', monospace, cursive;
   --font-body: 'Space Grotesk', sans-serif;
+
+  /* Fluid Typographic Scale */
+  --fs-xs: clamp(0.7rem, 0.65rem + 0.25vw, 0.85rem);
+  --fs-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --fs-xl: clamp(2rem, 1.75rem + 1.25vw, 3rem);
+  --fs-hero: clamp(3.5rem, 8vw, 8rem);
+
+  /* Fluid Spacing Scale */
+  --space-2: clamp(0.5rem, 0.4rem + 0.5vw, 1rem);
+  --space-3: clamp(1rem, 0.8rem + 1vw, 2rem);
 }
 
 /* Reset & Base Styles */
@@ -41,6 +51,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 80px;
   font-size: 16px;
   background-color: var(--bg-void);
   color: var(--text-primary);
@@ -51,6 +62,7 @@ body {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
+  font-size: var(--fs-base);
   line-height: 1.6;
   background-color: var(--bg-void);
   background-image: 
@@ -63,7 +75,7 @@ body {
 body::before {
   content: "";
   position: fixed;
-  top: 0; left: 0; width: 100vw; height: 100vh;
+  top: 0; left: 0; width: 100%; height: 100%;
   background: repeating-linear-gradient(
     0deg,
     rgba(0, 0, 0, 0.15),
@@ -79,7 +91,7 @@ body::before {
 body::after {
   content: "";
   position: fixed;
-  top: 0; left: 0; width: 100vw; height: 100vh;
+  top: 0; left: 0; width: 100%; height: 100%;
   background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.45) 100%);
   box-shadow: inset 0 0 80px rgba(0, 245, 160, 0.04);
   pointer-events: none;
@@ -89,7 +101,7 @@ body::after {
 /* Ambient Aurora / Plasma Background Mesh */
 #aurora-bg {
   position: fixed;
-  top: 0; left: 0; width: 100vw; height: 100vh;
+  top: 0; left: 0; width: 100%; height: 100%;
   z-index: -1;
   pointer-events: none;
   overflow: hidden;
@@ -115,6 +127,12 @@ body::after {
   width: 65vw; height: 65vw;
   background: radial-gradient(circle, var(--accent-prime), transparent 70%);
   animation: auroraDrift2 40s infinite alternate ease-in-out;
+}
+
+@media (max-width: 640px) {
+  .aurora-blob-2 {
+    right: 0;
+  }
 }
 
 .aurora-blob-3 {
@@ -216,9 +234,8 @@ body::after {
 .boot-hint {
   font-family: var(--font-body);
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: #9ca3af;
   margin-top: 1.5rem;
-  opacity: 0.7;
 }
 
 @keyframes bootBlink {
@@ -337,7 +354,7 @@ body.modal-open > #aurora-bg {
 /* Typography Helpers */
 .pixel-title {
   font-family: var(--font-display);
-  font-size: clamp(3.5rem, 8vw, 8rem);
+  font-size: var(--fs-hero);
   line-height: 0.88;
   letter-spacing: -0.03em;
   text-transform: uppercase;
@@ -349,7 +366,7 @@ body.modal-open > #aurora-bg {
 .pixel-heading {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-size: var(--fs-xl);
   text-transform: uppercase;
   color: var(--accent-prime);
   text-shadow: 0 0 12px rgba(0, 245, 160, 0.3);
@@ -359,7 +376,7 @@ body.modal-open > #aurora-bg {
 
 .section-subtitle {
   color: var(--text-muted);
-  font-size: 1.05rem;
+  font-size: var(--fs-base);
   margin-bottom: 2.5rem;
 }
 
@@ -393,13 +410,13 @@ body.modal-open > #aurora-bg {
 }
 
 .btn-secondary {
-  background: rgba(0, 245, 160, 0.1);
+  background: var(--border-prime-subtle);
   color: var(--accent-prime);
   border-color: var(--border-prime-subtle);
 }
 
 .btn-secondary:hover {
-  background: rgba(0, 245, 160, 0.25);
+  background: var(--border-prime-subtle);
   border-color: var(--accent-prime);
   box-shadow: var(--shadow-glow-prime);
   transform: translate(var(--magnet-x, 0px), calc(var(--magnet-y, 0px) - 2px));
@@ -446,6 +463,8 @@ body.modal-open > #aurora-bg {
 .hud-level-badge {
   font-family: var(--font-pixel);
   font-size: 0.75rem;
+  white-space: nowrap;
+  flex-shrink: 0;
   background: var(--bg-card);
   color: var(--accent-prime);
   border: 1px solid var(--accent-prime);
@@ -512,7 +531,7 @@ body.modal-open > #aurora-bg {
 #hud-nav a {
   color: var(--text-muted);
   text-decoration: none;
-  font-size: 0.9rem;
+  font-size: var(--fs-xs);
   font-weight: 500;
   transition: color 0.2s ease;
   padding: 0.25rem 0.5rem;
@@ -525,6 +544,13 @@ body.modal-open > #aurora-bg {
   background: rgba(0, 245, 160, 0.08);
 }
 
+#hud-nav a:focus-visible,
+#mobile-menu a:focus-visible {
+  outline: 2px solid var(--accent-prime);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 245, 160, 0.1);
+}
 .hamburger-btn {
   display: none;
   background: transparent;
@@ -592,9 +618,9 @@ body.modal-open > #aurora-bg {
 }
 
 #hero-canvas {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  z-index: 1;
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  z-index: 0;
   pointer-events: none;
 }
 
@@ -603,6 +629,9 @@ body.modal-open > #aurora-bg {
   z-index: 2;
   width: 50%;
   max-width: 650px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
 .hero-eyebrow {
@@ -626,7 +655,7 @@ body.modal-open > #aurora-bg {
 }
 
 .hero-subtitle {
-  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+  font-size: clamp(1.05rem, 1rem + 0.4vw, 1.35rem);
   color: var(--text-primary);
   margin-bottom: 2rem;
   line-height: 1.6;
@@ -662,7 +691,7 @@ body.modal-open > #aurora-bg {
    ========================================================================== */
 
 section {
-  padding: 5rem 1.5rem;
+  padding: clamp(3.5rem, 2.5rem + 2.5vw, 5rem) 1.5rem;
   max-width: 1100px;
   margin: 0 auto;
 }
@@ -731,7 +760,7 @@ section {
 .tech-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
-  gap: 0.6rem;
+  gap: var(--space-2);
 }
 
 .tech-badge {
@@ -1194,7 +1223,7 @@ section {
 }
 
 .no-link-note {
-  color: var(--text-muted);
+  color: #9ca3af;
   font-size: 0.8rem;
   font-style: italic;
 }
@@ -1297,6 +1326,7 @@ section {
   pointer-events: none;
   transition: opacity 0.3s ease, visibility 0.3s ease;
   padding: 1rem;
+  overflow-y: auto;
 }
 
 .game-modal.open {
@@ -1315,6 +1345,8 @@ section {
   padding: 1.5rem;
   max-width: 700px;
   width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
   box-shadow: 0 0 40px rgba(0, 245, 160, 0.3);
   display: flex;
   flex-direction: column;
@@ -1407,17 +1439,20 @@ canvas.game-canvas {
 /* ==========================================================================
    QUEST BOARD / CONTACT SECTION (#contact)
    ========================================================================== */
-
 .contact-layout {
   display: grid;
   grid-template-columns: 1fr 1.2fr;
   gap: 2.5rem;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .contact-cards {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .save-card {
@@ -1460,6 +1495,12 @@ canvas.game-canvas {
 .save-card.missing:hover {
   transform: none;
   border-color: var(--border-panel);
+}
+
+.save-card-link[aria-disabled="true"],
+a[aria-disabled="true"] {
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .card-icon {
@@ -1725,18 +1766,19 @@ footer a {
 /* Konami Cheat Overlay */
 #cheat-overlay {
   position: fixed;
-  top: 0; left: 0; width: 100vw; height: 100vh;
-  background: rgba(9, 12, 17, 0.95);
-  z-index: 5000;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(9, 12, 17, 0.85);
+  backdrop-filter: blur(10px);
+  z-index: 10000;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   opacity: 0;
   pointer-events: none;
+  overflow: hidden;
   transition: opacity 0.3s ease;
 }
-
 #cheat-overlay.active {
   opacity: 1;
   pointer-events: auto;
@@ -1909,4 +1951,524 @@ footer a {
   .hero-cta {
     justify-content: center;
   }
+}
+
+/* ===== COMMAND CONSOLE & FX ===== */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* HUD Tools Container & Buttons */
+.hud-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hud-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-pixel);
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.hud-tool-btn:hover {
+  border-color: var(--accent-prime);
+  box-shadow: var(--shadow-glow-prime);
+  color: var(--accent-prime);
+}
+
+@media (max-width: 640px) {
+  #hud {
+    padding: 0 0.75rem;
+  }
+  .hud-right {
+    gap: 0.35rem;
+  }
+  .hud-tools {
+    gap: 0.35rem;
+  }
+  .hud-tool-btn {
+    padding: 0.35rem 0.5rem;
+  }
+  .contact-form {
+    padding: 1.25rem;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 480px) {
+  .hud-tools .hud-tool-label {
+    display: none !important;
+  }
+  section {
+    padding: clamp(2rem, 1.5rem + 2vw, 3rem) 0.75rem;
+  }
+  #hud {
+    padding: 0 0.5rem;
+  }
+  .hud-level-badge {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.45rem;
+  }
+  .hud-tools {
+    gap: 0.25rem;
+  }
+  .hud-tool-btn {
+    padding: 0.25rem 0.4rem;
+    font-size: 0.65rem;
+  }
+  .hamburger-btn {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.65rem;
+  }
+  .save-card {
+    padding: 0.85rem 0.65rem;
+    gap: 0.5rem;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .card-icon {
+    font-size: 1.3rem;
+  }
+  .card-copy-btn {
+    padding: 0.35rem 0.45rem;
+    font-size: 0.5rem;
+  }
+  .rank-badge {
+    white-space: normal;
+    word-break: break-word;
+    font-size: 0.45rem;
+  }
+  .quest-pill {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.7rem;
+    white-space: normal;
+  }
+  .cheat-banner {
+    font-size: clamp(1.2rem, 3.5vw, 2.5rem);
+    white-space: normal;
+    word-break: break-word;
+    max-width: 100%;
+  }
+}
+
+.mobile-menu-tools {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 280px;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-panel);
+}
+
+.mobile-menu-tools .hud-tool-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 0.6rem 1rem;
+  font-size: 0.8rem;
+}
+
+/* Command Console Modal Overlay */
+.console-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(9, 12, 17, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 15vh;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.console-overlay.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .console-overlay {
+    transition: none !important;
+  }
+}
+
+html[data-fx="off"] .console-overlay {
+  transition: none !important;
+}
+
+/* Console Palette Window */
+.console-palette {
+  width: 90%;
+  max-width: 560px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid var(--border-prime-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), var(--shadow-glow-prime);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-body);
+}
+
+/* Input Area */
+.console-input-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 1.1rem;
+  border-bottom: 1px solid var(--border-panel);
+  background: rgba(0, 0, 0, 0.3);
+  gap: 0.75rem;
+}
+
+.console-prompt {
+  font-family: var(--font-pixel);
+  color: var(--accent-prime);
+  font-size: 1rem;
+  user-select: none;
+}
+
+.console-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+
+.console-input::placeholder {
+  color: var(--text-muted);
+}
+
+.console-shortcut-hint {
+  font-family: var(--font-pixel);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-panel);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+/* Results List */
+.console-results {
+  list-style: none;
+  max-height: 320px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.4rem;
+}
+
+.console-results::-webkit-scrollbar {
+  width: 6px;
+}
+
+.console-results::-webkit-scrollbar-thumb {
+  background: var(--border-prime-subtle);
+  border-radius: 3px;
+}
+
+.console-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  margin-bottom: 2px;
+}
+
+.console-item.selected,
+.console-item:hover {
+  background: var(--border-prime-subtle);
+  border-left: 3px solid var(--accent-prime);
+}
+
+html[data-theme="amber"] .console-item.selected,
+html[data-theme="amber"] .console-item:hover {
+  background: rgba(255, 158, 0, 0.15);
+  border-left-color: var(--accent-prime);
+}
+
+.console-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.console-item-label {
+  font-family: var(--font-pixel);
+  font-size: 0.75rem;
+  color: var(--text-primary);
+}
+
+.console-item.selected .console-item-label {
+  color: var(--accent-prime);
+}
+
+.console-item-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.console-item-cat {
+  font-family: var(--font-pixel);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-panel);
+  white-space: nowrap;
+}
+
+.console-empty {
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Footer Hint */
+.console-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1.1rem;
+  background: rgba(0, 0, 0, 0.4);
+  border-top: 1px solid var(--border-panel);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.console-hint {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+}
+
+.console-kbd-badge {
+  font-family: var(--font-pixel);
+  font-size: 0.65rem;
+  color: var(--accent-prime);
+  background: var(--border-prime-subtle);
+  border: 1px solid var(--border-prime-subtle);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+/* Color Theme: Amber Overrides */
+html[data-theme="amber"] {
+  --accent-prime: #ffb000;
+  --accent-critical: #ff5500;
+  --text-primary: #ffe9c2;
+  --text-muted: #bf9654;
+  --border-prime-subtle: rgba(255, 176, 0, 0.2);
+  --shadow-glow-prime: 0 0 15px rgba(255, 176, 0, 0.25);
+  --shadow-glow-critical: 0 0 15px rgba(255, 85, 0, 0.25);
+}
+
+html[data-theme="amber"] .arcade-frame {
+  box-shadow: 0 0 40px rgba(255, 176, 0, 0.3);
+}
+
+/* FX Level Overrides */
+html[data-fx="lite"] #aurora-bg,
+html[data-fx="off"] #aurora-bg {
+  display: none !important;
+}
+
+html[data-fx="lite"] #custom-cursor,
+html[data-fx="off"] #custom-cursor {
+  display: none !important;
+}
+
+html[data-fx="lite"] body,
+html[data-fx="off"] body,
+html[data-fx="lite"] a,
+html[data-fx="off"] a,
+html[data-fx="lite"] button,
+html[data-fx="off"] button,
+html[data-fx="lite"] input,
+html[data-fx="off"] input,
+html[data-fx="lite"] textarea,
+html[data-fx="off"] textarea,
+html[data-fx="lite"] select,
+html[data-fx="off"] select,
+html[data-fx="lite"] [role="button"],
+html[data-fx="off"] [role="button"] {
+  cursor: auto !important;
+}
+
+html[data-fx="lite"] a,
+html[data-fx="off"] a,
+html[data-fx="lite"] button,
+html[data-fx="off"] button,
+html[data-fx="lite"] [role="button"],
+html[data-fx="off"] [role="button"] {
+  cursor: pointer !important;
+}
+
+
+html[data-fx="lite"] .project-card,
+html[data-fx="lite"] .arcade-cabinet,
+html[data-fx="off"] .project-card,
+html[data-fx="off"] .arcade-cabinet {
+  --tilt: 1 !important;
+  transform: none !important;
+}
+
+html[data-fx="lite"] .btn:hover,
+html[data-fx="lite"] .pixel-title:focus-visible,
+html[data-fx="lite"] .pixel-heading:focus-visible,
+html[data-fx="lite"] .btn:focus-visible,
+html[data-fx="off"] .btn:hover,
+html[data-fx="off"] .pixel-title:focus-visible,
+html[data-fx="off"] .pixel-heading:focus-visible,
+html[data-fx="off"] .btn:focus-visible {
+  animation: none !important;
+}
+
+html[data-fx="off"] {
+  scroll-behavior: auto !important;
+}
+
+html[data-fx="off"] body::before {
+  display: none !important;
+}
+
+html[data-fx="off"] body::after {
+  display: none !important;
+}
+
+html[data-fx="off"] .project-card::before,
+html[data-fx="off"] .arcade-cabinet::before,
+html[data-fx="off"] .save-card::before {
+  display: none !important;
+}
+/* ===== ACHIEVEMENTS ===== */
+.hud-tool-btn.all-unlocked {
+  border-color: #ffb000 !important;
+  color: #ffb000 !important;
+  box-shadow: 0 0 12px rgba(255, 176, 0, 0.4) !important;
+}
+
+.ach-summary {
+  font-family: var(--font-pixel);
+  font-size: 0.75rem;
+  color: var(--accent-prime);
+  margin-bottom: 1rem;
+  text-align: center;
+  width: 100%;
+}
+
+.ach-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+.ach-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: rgba(9, 12, 17, 0.6);
+  border: 1px solid var(--border-panel);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.ach-item.ach-unlocked {
+  border-color: var(--accent-prime);
+  background: var(--border-prime-subtle);
+}
+
+.ach-item.ach-locked {
+  opacity: 0.6;
+}
+
+.ach-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.ach-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex-grow: 1;
+}
+
+.ach-title {
+  font-family: var(--font-pixel);
+  font-size: 0.75rem;
+  color: var(--text-primary);
+}
+
+.ach-item.ach-unlocked .ach-title {
+  color: var(--accent-prime);
+}
+
+.ach-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.ach-item.ach-unlocked .ach-desc {
+  color: var(--text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #achievements-modal,
+  #achievements-modal .arcade-frame {
+    transition: none !important;
+  }
+}
+
+html[data-fx="off"] #achievements-modal,
+html[data-fx="off"] #achievements-modal .arcade-frame {
+  transition: none !important;
 }
